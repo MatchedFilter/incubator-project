@@ -1,0 +1,30 @@
+{
+  "[c]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+
+  "editor.rulers": [100],
+  "C_Cpp.formatting": "disabled",
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "C_Cpp.enhancedColorization": "disabled",
+  "C_Cpp.autocomplete": "disabled",
+  "C_Cpp.errorSquiggles": "disabled",
+
+  "clangd.path": "/usr/bin/clangd-22",
+  
+  "clangd.arguments": [
+    "--fallback-style=none",
+    "--compile-commands-dir=/workspace/incubator-project/build/stm32/Debug/",
+    "--query-driver=/usr/bin/arm-none-eabi-*"
+  ],
+  "lldb-dap.executable-path": "/usr/bin/lldb-dap-18"
+}
