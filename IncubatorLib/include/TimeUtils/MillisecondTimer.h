@@ -8,28 +8,28 @@ namespace TimeUtils
 class MillisecondTimer
 {
 public:
-  inline void SetDuration(const std::uint32_t durationInMs)
+  inline auto SetDuration(const std::uint32_t durationInMs) -> void
   {
     m_Duration = durationInMs;
   }
 
-  inline void Start()
+  inline auto Start()
   {
     m_IsRunning = true;
     m_StartTime = bsp_get_time_in_ms();
   }
 
-  inline void Stop()
+  inline auto Stop()
   {
     m_IsRunning = false;
   }
 
-  inline bool IsFinished(void) const
+  inline auto IsFinished(void) const
   {
     return !m_IsRunning;
   }
 
-  inline void Update(const uint32_t currentTimeInMillisecond)
+  inline auto Update(const uint32_t currentTimeInMillisecond)
   {
     if (m_IsRunning)
     {

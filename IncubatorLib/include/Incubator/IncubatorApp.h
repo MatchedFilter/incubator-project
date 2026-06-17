@@ -1,6 +1,8 @@
 #ifndef INCUBATOR_INCUBATORAPP_H
 #define INCUBATOR_INCUBATORAPP_H
 #include "TimeUtils/MillisecondTimer.h"
+#include "UsbCommandHandler.h"
+#include "UsbTransmissionHandler.h"
 namespace Incubator
 {
 class IncubatorApp
@@ -8,12 +10,13 @@ class IncubatorApp
 public:
   IncubatorApp()  = default;
   ~IncubatorApp() = default;
-  void Initialize();
-  void Run();
+  auto Initialize(void) -> void;
+  auto Run(void) -> void;
 
 private:
-  TimeUtils::MillisecondTimer *m_Timer             = nullptr;
-  TimeUtils::MillisecondTimer *m_HeartbeatUsbTimer = nullptr;
+  TimeUtils::MillisecondTimer *m_Timer = nullptr;
+  UsbCommandHandler m_UsbCommandHandler;
+  UsbTransmissionHandler m_UsbTransmissionHandler;
 };
 } // namespace Incubator
 #endif // INCUBATOR_INCUBATORAPP_H

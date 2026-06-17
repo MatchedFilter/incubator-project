@@ -60,3 +60,7 @@ AlignConsecutiveMacros:
   Enabled: true
   AcrossEmptyLines: false
   AcrossComments: false
+
+
+# Indents case labels one level inside switch blocks
+IndentCaseLabels: true

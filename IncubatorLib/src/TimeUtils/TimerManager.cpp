@@ -8,7 +8,7 @@ namespace TimeUtils
 uint8_t TimerManager::s_Index = 0;
 MillisecondTimer TimerManager::s_Timers[MAX_MS_TIMER_SIZE];
 
-MillisecondTimer *TimerManager::CreateMillisecondTimer(void)
+auto TimerManager::CreateMillisecondTimer(void) -> MillisecondTimer *
 {
   MillisecondTimer *timer = nullptr;
   if (s_Index < MAX_MS_TIMER_SIZE) [[likely]]
@@ -23,7 +23,7 @@ MillisecondTimer *TimerManager::CreateMillisecondTimer(void)
   return timer;
 }
 
-void TimerManager::Run(void)
+auto TimerManager::Run(void) -> void
 {
   const uint32_t currentMs = bsp_get_time_in_ms();
   for (uint8_t i = 0U; i < s_Index; i++)

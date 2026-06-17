@@ -11,8 +11,8 @@ class TimerManager
 public:
   TimerManager()  = delete;
   ~TimerManager() = delete;
-  static MillisecondTimer *CreateMillisecondTimer(void);
-  static void Run(void);
+  static auto CreateMillisecondTimer(void) -> MillisecondTimer *;
+  static auto Run(void) -> void;
 
 private:
   static uint8_t s_Index;
