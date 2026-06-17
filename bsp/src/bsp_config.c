@@ -10,11 +10,11 @@
 #include "usbd_cdc_if.h"
 
 I2C_HandleTypeDef hi2c1;
-extern volatile bool usb_data_ready;
-extern volatile uint32_t usb_rx_len;
-extern uint8_t usb_rx_buffer[64];
+volatile bool usb_data_ready   = false;
+volatile uint32_t usb_rx_len   = 0U;
+uint8_t usb_rx_buffer[64]      = {0U};
+volatile bool usb_port_is_open = false;
 extern volatile uint32_t systick_counter;
-extern volatile bool usb_port_is_open;
 
 void SystemClock_Config(void);
 static void gpio_init(void);
@@ -25,10 +25,11 @@ static void i2c1_init(void);
 void bsp_initialize(void)
 {
   HAL_Init();
-  gpio_init();
+  SystemClock_Config();
   internal_led_init();
+  gpio_init();
   i2c1_init();
-  bsp_delay_in_millisecond(5000U);
+  HAL_Delay(2000U);
   force_usb_reenumeration();
   MX_USB_DEVICE_Init();
 }

@@ -94,6 +94,7 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
+extern volatile bool usb_port_is_open;
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -108,10 +109,9 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
-uint8_t usb_rx_buffer[64];
-volatile uint32_t usb_rx_len   = 0U;
-volatile bool usb_data_ready   = false;
-volatile bool usb_port_is_open = false;
+extern uint8_t usb_rx_buffer[64];
+extern volatile uint32_t usb_rx_len;
+extern volatile bool usb_data_ready;
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**
@@ -175,6 +175,7 @@ static int8_t CDC_DeInit_FS(void)
 static int8_t CDC_Control_FS(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 {
   /* USER CODE BEGIN 5 */
+  (void) pbuf;
   (void) length;
   switch (cmd)
   {
