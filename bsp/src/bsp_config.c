@@ -1,12 +1,20 @@
 #include "bsp_config.h"
 
+#include "cmsis_gcc.h"
 #include "main.h"
+#include "stm32f103xb.h"
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_gpio.h"
 #include "stm32f1xx_hal_i2c.h"
 #include "usb_device.h"
+#include "usbd_cdc_if.h"
 
 I2C_HandleTypeDef hi2c1;
+extern volatile bool usb_data_ready;
+extern volatile uint32_t usb_rx_len;
+extern uint8_t usb_rx_buffer[64];
+extern volatile uint32_t systick_counter;
+extern volatile bool usb_port_is_open;
 
 void SystemClock_Config(void);
 static void gpio_init(void);
@@ -16,32 +24,82 @@ static void i2c1_init(void);
 
 void bsp_initialize(void)
 {
-  force_usb_reenumeration();
   HAL_Init();
   gpio_init();
-  MX_USB_DEVICE_Init();
   internal_led_init();
   i2c1_init();
+  bsp_delay_in_millisecond(5000U);
+  force_usb_reenumeration();
+  MX_USB_DEVICE_Init();
 }
 
-void internal_led_turn_on(void)
+void bsp_reset(void)
+{
+  NVIC_SystemReset();
+}
+
+void bsp_assert(bool condition)
+{
+  if (condition == false)
+  {
+    Error_Handler();
+  }
+}
+
+uint32_t bsp_get_time_in_ms(void)
+{
+  return systick_counter;
+}
+
+void bsp_internal_led_turn_on(void)
 {
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 }
 
-void internal_led_turn_off(void)
+void bsp_internal_led_turn_off(void)
 {
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 }
 
-void internal_led_toggle(void)
+void bsp_internal_led_toggle(void)
 {
   HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 }
 
-void delay_in_millisecond(const uint32_t millisecond)
+void bsp_delay_in_millisecond(const uint32_t millisecond)
 {
   HAL_Delay(millisecond);
+}
+
+bool bsp_is_usb_data_ready(void)
+{
+  return usb_data_ready;
+}
+
+void bsp_clear_usb_data_ready(void)
+{
+  usb_data_ready = false;
+}
+
+const uint8_t *bsp_get_usb_data(uint32_t *const buffer_length)
+{
+  uint8_t *result = NULL;
+  if (usb_data_ready == true)
+  {
+    result         = &usb_rx_buffer[0];
+    *buffer_length = usb_rx_len;
+  }
+  return result;
+}
+
+bool bsp_usb_send_data(const uint8_t *const buffer, const uint16_t size)
+{
+  bool result = false;
+  if (usb_port_is_open)
+  {
+    result = (CDC_Transmit_FS((uint8_t *) buffer, size) == USBD_OK);
+  }
+  return result;
 }
 
 void SystemClock_Config(void)
@@ -133,10 +191,12 @@ static void force_usb_reenumeration(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
-  for (volatile uint32_t i = 0; i < 100000; i++)
-    ;
+  HAL_Delay(250);
 
   HAL_GPIO_DeInit(GPIOA, GPIO_PIN_12);
+  __HAL_RCC_USB_CLK_ENABLE();
+  USB->ISTR = 0;
+  NVIC_ClearPendingIRQ(USB_LP_CAN1_RX0_IRQn);
 }
 
 static void i2c1_init(void)

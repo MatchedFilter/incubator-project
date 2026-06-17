@@ -22,8 +22,7 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-#include "stdbool.h"
-
+#include <stdbool.h>
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,7 +30,8 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-volatile bool usb_port_is_open = false;
+/* Private variables ---------------------------------------------------------*/
+
 /* USER CODE END PV */
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -94,7 +94,6 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -109,7 +108,10 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
-
+uint8_t usb_rx_buffer[64];
+volatile uint32_t usb_rx_len   = 0U;
+volatile bool usb_data_ready   = false;
+volatile bool usb_port_is_open = false;
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**
@@ -265,8 +267,17 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t *pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t *Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
-  (void) Len;
-  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
+  uint32_t data_len = *Len;
+  if (data_len > 64)
+  {
+    data_len = 64;
+  }
+
+  (void) memcpy(usb_rx_buffer, Buf, data_len);
+  usb_rx_len     = data_len;
+  usb_data_ready = true;
+
+  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, Buf);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);
   /* USER CODE END 6 */

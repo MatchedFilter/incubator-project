@@ -791,11 +791,11 @@ uint8_t USBD_CDC_RegisterInterface(USBD_HandleTypeDef *pdev, USBD_CDC_ItfTypeDef
  * @param  pbuff: Tx Buffer
  * @retval status
  */
-uint8_t USBD_CDC_SetTxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff, uint16_t length)
+uint8_t USBD_CDC_SetTxBuffer(USBD_HandleTypeDef *pdev, const uint8_t *pbuff, uint16_t length)
 {
   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *) pdev->pClassData;
 
-  hcdc->TxBuffer = pbuff;
+  hcdc->TxBuffer = (uint8_t *) pbuff;
   hcdc->TxLength = length;
 
   return USBD_OK;

@@ -31,59 +31,20 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
     add_compile_definitions(USE_HAL_DRIVER STM32F103xB)
 
-    include_directories(
-        include
-        bsp/src/Drivers/STM32F1xx_HAL_Driver/Inc
-        bsp/src/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy
-        bsp/src/Drivers/CMSIS/Device/ST/STM32F1xx/Include
-        bsp/src/Drivers/CMSIS/Include
-        bsp/src/Core/Inc
-        bsp/src/Middlewares/ST/STM32_USB_Device_Library/Core/Inc
-        bsp/src/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc
-        bsp/src/USB_DEVICE/App
-        bsp/src/USB_DEVICE/Target
-        bsp/include
-    )
+    add_subdirectory(bsp)
+    add_subdirectory(IncubatorLib)
 
-    file(GLOB_RECURSE SOURCES 
-        "src/*.cpp"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c"
-        "bsp/src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c"
-
-        "bsp/src/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c"
-        "bsp/src/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c"
-        "bsp/src/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c"
-        "bsp/src/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c"
-
-        "bsp/src/USB_DEVICE/App/usb_device.c"
-        "bsp/src/USB_DEVICE/App/usbd_cdc_if.c"
-        "bsp/src/USB_DEVICE/App/usbd_desc.c"
-        "bsp/src/USB_DEVICE/Target/usbd_conf.c"
-
-        "bsp/src/Core/Src/*.c"
-        "bsp/src/Core/Src/*.s"
-        "bsp/src/bsp_config.c"
-    )
-
-
-    set_source_files_properties(bsp/Core/Src/startup_stm32f103xb.s
-        PROPERTIES COMPILE_FLAGS "-x assembler-with-cpp"
+    file(GLOB_RECURSE INCUBATOR_SRCS
+        src/*.cpp
     )
 
     add_executable(${PROJECT_NAME}.elf
-        ${SOURCES}
-        ${COMMON_SRCS}
+        ${INCUBATOR_SRCS}
+    )
+
+    target_link_libraries(${PROJECT_NAME}.elf PRIVATE
+        incubator_bsp_lib
+        IncubatorLib
     )
 
     add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
@@ -93,7 +54,6 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
         COMMAND ${CMAKE_SIZE} ${PROJECT_NAME}.elf
         COMMENT "Generating auxiliary flash memory file formats (.bin, .hex, .srec)..."
     )
-
 
 
 else()
