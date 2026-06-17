@@ -32,6 +32,7 @@ extern "C"
 
   /* Private includes ----------------------------------------------------------*/
   /* USER CODE BEGIN Includes */
+
   /* USER CODE END Includes */
 
   /* Exported types ------------------------------------------------------------*/
@@ -46,8 +47,6 @@ extern "C"
 
   /* Exported macro ------------------------------------------------------------*/
   /* USER CODE BEGIN EM */
-
-#define TIMEOUT_LOOP_COUNT 20
 
   /* USER CODE END EM */
 
