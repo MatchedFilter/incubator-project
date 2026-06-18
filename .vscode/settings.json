@@ -23,7 +23,7 @@
   
   "clangd.arguments": [
     "--fallback-style=none",
-    "--compile-commands-dir=/workspace/incubator-project/build/stm32/Debug/",
+    "--compile-commands-dir=/workspace/incubator-project/build/stm32/Release/",
     "--query-driver=/usr/bin/arm-none-eabi-*"
   ],
   "lldb-dap.executable-path": "/usr/bin/lldb-dap-18"
