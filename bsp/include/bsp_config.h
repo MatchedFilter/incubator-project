@@ -20,6 +20,9 @@ extern "C"
   const uint8_t *bsp_get_usb_data(uint32_t *buffer_length);
   bool bsp_usb_send_data(const uint8_t *const buffer, const uint16_t size);
 
+  void bsp_humidity_motor_turn_on(void);
+  void bsp_humidity_motor_turn_off(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -16,7 +16,7 @@ public:
 
 private:
   static uint8_t s_Index;
-  static constexpr uint8_t MAX_MS_TIMER_SIZE = 8U;
+  static constexpr uint8_t MAX_MS_TIMER_SIZE = 16U;
   static MillisecondTimer s_Timers[MAX_MS_TIMER_SIZE];
 };
 } // namespace TimeUtils
