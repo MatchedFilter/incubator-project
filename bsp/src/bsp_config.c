@@ -16,6 +16,9 @@ uint8_t usb_rx_buffer[64]      = {0U};
 volatile bool usb_port_is_open = false;
 extern volatile uint32_t systick_counter;
 
+DMA_HandleTypeDef hdma_i2c1_rx;
+DMA_HandleTypeDef hdma_i2c1_tx;
+
 void SystemClock_Config(void);
 static void gpio_init(void);
 static void internal_led_init(void);
