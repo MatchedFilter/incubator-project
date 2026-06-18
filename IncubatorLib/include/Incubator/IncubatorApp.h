@@ -17,6 +17,8 @@ private:
   TimeUtils::MillisecondTimer *m_Timer = nullptr;
   UsbCommandHandler m_UsbCommandHandler;
   UsbTransmissionHandler m_UsbTransmissionHandler;
+  TimeUtils::MillisecondTimer *m_DummyTimer = nullptr;
+  uint8_t m_MotorState                      = 0U;
 };
 } // namespace Incubator
 #endif // INCUBATOR_INCUBATORAPP_H

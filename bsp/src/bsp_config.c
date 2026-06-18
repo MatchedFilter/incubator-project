@@ -9,6 +9,8 @@
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 
+#define SERVO_CENTER_PULSE (1020)
+
 I2C_HandleTypeDef hi2c1;
 volatile bool usb_data_ready   = false;
 volatile uint32_t usb_rx_len   = 0U;
@@ -27,6 +29,7 @@ static void internal_led_init(void);
 static void force_usb_reenumeration(void);
 static void i2c1_init(void);
 static void tim2_init(void);
+static void pwm_init(void);
 
 void bsp_initialize(void)
 {
@@ -37,6 +40,7 @@ void bsp_initialize(void)
   dma_init();
   i2c1_init();
   tim2_init();
+  pwm_init();
   HAL_Delay(2000U);
   force_usb_reenumeration();
   MX_USB_DEVICE_Init();
@@ -119,6 +123,34 @@ void bsp_humidity_motor_turn_on(void)
 void bsp_humidity_motor_turn_off(void)
 {
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+}
+
+void bsp_servo_motor_rotate(const uint8_t direction, uint8_t speedInPercentage)
+{
+  if (speedInPercentage > 100U)
+  {
+    speedInPercentage = 100U;
+  }
+
+  uint32_t ccr_value = SERVO_CENTER_PULSE;
+
+  switch (direction)
+  {
+    case BSP_SERVO_MOTOR_DIRECTION_RIGHT:
+      ccr_value = SERVO_CENTER_PULSE + (speedInPercentage * 10U);
+      break;
+
+    case BSP_SERVO_MOTOR_DIRECTION_LEFT:
+      ccr_value = SERVO_CENTER_PULSE - (speedInPercentage * 10U);
+      break;
+
+    case BSP_SERVO_MOTOR_DIRECTION_STOP:
+    default:
+      ccr_value = SERVO_CENTER_PULSE;
+      break;
+  }
+
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, ccr_value);
 }
 
 void SystemClock_Config(void)
@@ -284,7 +316,7 @@ static void tim2_init(void)
     Error_Handler();
   }
   sConfigOC.OCMode     = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse      = 1500;
+  sConfigOC.Pulse      = SERVO_CENTER_PULSE;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -292,4 +324,9 @@ static void tim2_init(void)
     Error_Handler();
   }
   HAL_TIM_MspPostInit(&htim2);
+}
+
+static void pwm_init(void)
+{
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 }

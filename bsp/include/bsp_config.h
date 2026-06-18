@@ -3,6 +3,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define BSP_SERVO_MOTOR_DIRECTION_STOP  (0U)
+#define BSP_SERVO_MOTOR_DIRECTION_RIGHT (1U)
+#define BSP_SERVO_MOTOR_DIRECTION_LEFT  (2U)
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -22,6 +26,8 @@ extern "C"
 
   void bsp_humidity_motor_turn_on(void);
   void bsp_humidity_motor_turn_off(void);
+
+  void bsp_servo_motor_rotate(const uint8_t direction, uint8_t speedInPercentage);
 
 #ifdef __cplusplus
 }

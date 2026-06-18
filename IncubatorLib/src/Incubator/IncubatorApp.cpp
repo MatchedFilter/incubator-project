@@ -21,6 +21,9 @@ auto IncubatorApp::Initialize(void) -> void
   m_Timer->SetDuration(250U);
 
   m_UsbTransmissionHandler.Initialize();
+  m_DummyTimer = TimeUtils::TimerManager::CreateMillisecondTimer();
+  m_DummyTimer->SetDuration(1000);
+  m_DummyTimer->Start();
 }
 
 auto IncubatorApp::Run(void) -> void
@@ -32,5 +35,10 @@ auto IncubatorApp::Run(void) -> void
   }
   m_UsbCommandHandler.Run();
   m_UsbTransmissionHandler.Run();
+
+  if (m_DummyTimer->IsFinished())
+  {
+    m_DummyTimer->Start();
+  }
 }
 } // namespace Incubator
