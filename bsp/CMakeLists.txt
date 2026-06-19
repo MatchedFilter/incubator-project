@@ -19,6 +19,8 @@ file(GLOB_RECURSE INCUBATOR_BSP_LIB_SRCS
     "src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c"
     "src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c"
     "src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+    "src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c"
+    "src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c"
     "src/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c"
 
     "src/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c"

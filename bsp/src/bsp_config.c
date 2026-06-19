@@ -9,7 +9,7 @@
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 
-#define SERVO_CENTER_PULSE (1020)
+#define SERVO_CENTER_PULSE (1500U)
 
 I2C_HandleTypeDef hi2c1;
 volatile bool usb_data_ready   = false;
@@ -22,6 +22,9 @@ DMA_HandleTypeDef hdma_i2c1_rx;
 DMA_HandleTypeDef hdma_i2c1_tx;
 TIM_HandleTypeDef htim2;
 
+ADC_HandleTypeDef hadc1;
+TIM_HandleTypeDef htim3;
+
 void SystemClock_Config(void);
 static void gpio_init(void);
 static void dma_init(void);
@@ -29,7 +32,9 @@ static void internal_led_init(void);
 static void force_usb_reenumeration(void);
 static void i2c1_init(void);
 static void tim2_init(void);
+static void tim3_init(void);
 static void pwm_init(void);
+static void adc1_init(void);
 
 void bsp_initialize(void)
 {
@@ -40,7 +45,9 @@ void bsp_initialize(void)
   dma_init();
   i2c1_init();
   tim2_init();
+  tim3_init();
   pwm_init();
+  adc1_init();
   HAL_Delay(2000U);
   force_usb_reenumeration();
   MX_USB_DEVICE_Init();
@@ -165,11 +172,12 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSIState       = RCC_HSI_ON;
   RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL     = RCC_PLL_MUL6;
+  RCC_OscInitStruct.PLL.PLLMUL     = RCC_PLL_MUL9;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
+
   RCC_ClkInitStruct.ClockType =
     RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
@@ -177,12 +185,13 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB;
-  PeriphClkInit.UsbClockSelection    = RCC_USBCLKSOURCE_PLL;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC | RCC_PERIPHCLK_USB;
+  PeriphClkInit.AdcClockSelection    = RCC_ADCPCLK2_DIV6;
+  PeriphClkInit.UsbClockSelection    = RCC_USBCLKSOURCE_PLL_DIV1_5;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -215,17 +224,38 @@ void Error_Handler(void)
 static void gpio_init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
-  GPIO_InitStruct.Pin   = GPIO_PIN_4 | GPIO_PIN_7;
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PA4 PA6 PA7 */
+  GPIO_InitStruct.Pin   = GPIO_PIN_4 | GPIO_PIN_6 | GPIO_PIN_7;
   GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull  = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA5 */
+  GPIO_InitStruct.Pin   = GPIO_PIN_5;
+  GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull  = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB10 */
+  GPIO_InitStruct.Pin  = GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
 static void dma_init(void)
@@ -286,16 +316,23 @@ static void i2c1_init(void)
 
 static void tim2_init(void)
 {
-  TIM_SlaveConfigTypeDef sSlaveConfig   = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC          = {0};
-  htim2.Instance                        = TIM2;
-  htim2.Init.Prescaler                  = 71;
-  htim2.Init.CounterMode                = TIM_COUNTERMODE_UP;
-  htim2.Init.Period                     = 19999;
-  htim2.Init.ClockDivision              = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload          = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_SlaveConfigTypeDef sSlaveConfig       = {0};
+  TIM_MasterConfigTypeDef sMasterConfig     = {0};
+  TIM_OC_InitTypeDef sConfigOC              = {0};
+
+  htim2.Instance               = TIM2;
+  htim2.Init.Prescaler         = 71;
+  htim2.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  htim2.Init.Period            = 19999;
+  htim2.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
   {
     Error_Handler();
   }
@@ -316,7 +353,7 @@ static void tim2_init(void)
     Error_Handler();
   }
   sConfigOC.OCMode     = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse      = SERVO_CENTER_PULSE;
+  sConfigOC.Pulse      = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -326,7 +363,67 @@ static void tim2_init(void)
   HAL_TIM_MspPostInit(&htim2);
 }
 
+static void tim3_init(void)
+{
+  TIM_SlaveConfigTypeDef sSlaveConfig   = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  htim3.Instance               = TIM3;
+  htim3.Init.Prescaler         = 71;
+  htim3.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  htim3.Init.Period            = 4999;
+  htim3.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sSlaveConfig.SlaveMode    = TIM_SLAVEMODE_DISABLE;
+  sSlaveConfig.InputTrigger = TIM_TS_ITR1;
+  if (HAL_TIM_SlaveConfigSynchro(&htim3, &sSlaveConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
 static void pwm_init(void)
 {
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+}
+
+static void adc1_init(void)
+{
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  hadc1.Instance                   = ADC1;
+  hadc1.Init.ScanConvMode          = ADC_SCAN_ENABLE;
+  hadc1.Init.ContinuousConvMode    = ENABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv      = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign             = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion       = 2;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  sConfig.Channel      = ADC_CHANNEL_8;
+  sConfig.Rank         = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  sConfig.Rank = ADC_REGULAR_RANK_2;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
