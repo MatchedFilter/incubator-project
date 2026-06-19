@@ -164,19 +164,15 @@ void bsp_servo_motor_rotate(const uint8_t direction, uint8_t speedInPercentage)
   __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, ccr_value);
 }
 
-bool bsp_joystick_read_values(uint16_t *x_value, uint16_t *y_value)
+void bsp_joystick_read_values(uint16_t *x_value, uint16_t *y_value)
 {
-  bool result            = false;
-  bool valid_to_continue = x_value != NULL;
-  if (valid_to_continue)
-  {
-    valid_to_continue = y_value != NULL;
-  }
-  if (valid_to_continue)
-  {
-  }
   if (x_value != NULL)
   {
+    *x_value = joystick_values[0];
+  }
+  if (y_value != NULL)
+  {
+    *y_value = joystick_values[1];
   }
 }
 
@@ -444,7 +440,8 @@ static void adc1_init(void)
     Error_Handler();
   }
 
-  sConfig.Rank = ADC_REGULAR_RANK_2;
+  sConfig.Channel = ADC_CHANNEL_9;
+  sConfig.Rank    = ADC_REGULAR_RANK_2;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
