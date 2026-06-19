@@ -17,9 +17,11 @@ volatile uint32_t usb_rx_len   = 0U;
 uint8_t usb_rx_buffer[64]      = {0U};
 volatile bool usb_port_is_open = false;
 extern volatile uint32_t systick_counter;
+uint16_t joystick_values[2] = {0U};
 
 DMA_HandleTypeDef hdma_i2c1_rx;
 DMA_HandleTypeDef hdma_i2c1_tx;
+DMA_HandleTypeDef hdma_adc1;
 TIM_HandleTypeDef htim2;
 
 ADC_HandleTypeDef hadc1;
@@ -35,6 +37,7 @@ static void tim2_init(void);
 static void tim3_init(void);
 static void pwm_init(void);
 static void adc1_init(void);
+static void adc1_readings_init(void);
 
 void bsp_initialize(void)
 {
@@ -48,6 +51,7 @@ void bsp_initialize(void)
   tim3_init();
   pwm_init();
   adc1_init();
+  adc1_readings_init();
   HAL_Delay(2000U);
   force_usb_reenumeration();
   MX_USB_DEVICE_Init();
@@ -160,6 +164,22 @@ void bsp_servo_motor_rotate(const uint8_t direction, uint8_t speedInPercentage)
   __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, ccr_value);
 }
 
+bool bsp_joystick_read_values(uint16_t *x_value, uint16_t *y_value)
+{
+  bool result            = false;
+  bool valid_to_continue = x_value != NULL;
+  if (valid_to_continue)
+  {
+    valid_to_continue = y_value != NULL;
+  }
+  if (valid_to_continue)
+  {
+  }
+  if (x_value != NULL)
+  {
+  }
+}
+
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct   = {0};
@@ -261,6 +281,9 @@ static void gpio_init(void)
 static void dma_init(void)
 {
   __HAL_RCC_DMA1_CLK_ENABLE();
+
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
   HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
@@ -426,4 +449,9 @@ static void adc1_init(void)
   {
     Error_Handler();
   }
+}
+
+static void adc1_readings_init(void)
+{
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t *) joystick_values, 2U);
 }
