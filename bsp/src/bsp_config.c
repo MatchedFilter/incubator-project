@@ -168,11 +168,11 @@ void bsp_joystick_read_values(uint16_t *x_value, uint16_t *y_value)
 {
   if (x_value != NULL)
   {
-    *x_value = joystick_values[0];
+    *x_value = joystick_values[1];
   }
   if (y_value != NULL)
   {
-    *y_value = joystick_values[1];
+    *y_value = joystick_values[0];
   }
 }
 
