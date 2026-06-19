@@ -164,7 +164,7 @@ void bsp_servo_motor_rotate(const uint8_t direction, uint8_t speedInPercentage)
   __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, ccr_value);
 }
 
-void bsp_joystick_read_values(uint16_t *x_value, uint16_t *y_value)
+void bsp_joystick_read_positions(uint16_t *x_value, uint16_t *y_value)
 {
   if (x_value != NULL)
   {
@@ -174,6 +174,11 @@ void bsp_joystick_read_values(uint16_t *x_value, uint16_t *y_value)
   {
     *y_value = joystick_values[0];
   }
+}
+
+bool bsp_joystick_is_switch_pressed(void)
+{
+  return (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10) == 0U);
 }
 
 void SystemClock_Config(void)

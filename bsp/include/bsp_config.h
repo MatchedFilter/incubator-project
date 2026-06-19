@@ -29,7 +29,8 @@ extern "C"
 
   void bsp_servo_motor_rotate(const uint8_t direction, uint8_t speedInPercentage);
 
-  void bsp_joystick_read_values(uint16_t *x_value, uint16_t *y_value);
+  void bsp_joystick_read_positions(uint16_t *x_value, uint16_t *y_value);
+  bool bsp_joystick_is_switch_pressed(void);
 
 #ifdef __cplusplus
 }
