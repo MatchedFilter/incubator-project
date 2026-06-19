@@ -1,5 +1,6 @@
 #include "bsp_config.h"
 
+#include "bsp_lcd_20x4.h"
 #include "cmsis_gcc.h"
 #include "main.h"
 #include "stm32f103xb.h"
@@ -38,6 +39,7 @@ static void tim3_init(void);
 static void pwm_init(void);
 static void adc1_init(void);
 static void adc1_readings_init(void);
+static void lcd_20x4_init(void);
 
 void bsp_initialize(void)
 {
@@ -52,6 +54,7 @@ void bsp_initialize(void)
   pwm_init();
   adc1_init();
   adc1_readings_init();
+  lcd_20x4_init();
   HAL_Delay(2000U);
   force_usb_reenumeration();
   MX_USB_DEVICE_Init();
@@ -179,6 +182,21 @@ void bsp_joystick_read_positions(uint16_t *x_value, uint16_t *y_value)
 bool bsp_joystick_is_switch_pressed(void)
 {
   return (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10) == 0U);
+}
+
+void bsp_lcd_20x4_send_command(uint8_t cmd)
+{
+  __bsp_lcd_20x4_send_command(cmd);
+}
+
+void bsp_lcd_20x4_send_data(uint8_t data)
+{
+  __bsp_lcd_20x4_send_data(data);
+}
+
+void bsp_lcd_20x4_process_run(void)
+{
+  __bsp_lcd_20x4_process_queue();
 }
 
 void SystemClock_Config(void)
@@ -336,6 +354,12 @@ static void i2c1_init(void)
   {
     Error_Handler();
   }
+
+  HAL_NVIC_SetPriority(I2C1_EV_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+
+  HAL_NVIC_SetPriority(I2C1_ER_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
 }
 
 static void tim2_init(void)
@@ -456,4 +480,19 @@ static void adc1_init(void)
 static void adc1_readings_init(void)
 {
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *) joystick_values, 2U);
+}
+
+static void lcd_20x4_init(void)
+{
+  __bsp_lcd_20x4_initialize();
+}
+
+void I2C1_EV_IRQHandler(void)
+{
+  HAL_I2C_EV_IRQHandler(&hi2c1);
+}
+
+void I2C1_ER_IRQHandler(void)
+{
+  HAL_I2C_ER_IRQHandler(&hi2c1);
 }

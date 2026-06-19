@@ -32,6 +32,10 @@ extern "C"
   void bsp_joystick_read_positions(uint16_t *x_value, uint16_t *y_value);
   bool bsp_joystick_is_switch_pressed(void);
 
+  void bsp_lcd_20x4_send_command(uint8_t cmd);
+  void bsp_lcd_20x4_send_data(uint8_t data);
+  void bsp_lcd_20x4_process_run(void);
+
 #ifdef __cplusplus
 }
 #endif

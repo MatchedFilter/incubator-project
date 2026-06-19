@@ -4,7 +4,7 @@
 namespace Utils::StringUtils
 {
 template <typename T, uint8_t N>
-uint8_t __int_to_array_offset_impl(T value, char (&chr)[N], uint8_t offset, bool is_negative)
+auto __int_to_array_offset_impl(T value, char (&chr)[N], uint8_t offset, bool is_negative)
 {
   if (offset >= (N - 1))
   {
@@ -51,23 +51,23 @@ uint8_t __int_to_array_offset_impl(T value, char (&chr)[N], uint8_t offset, bool
 }
 
 // --- Unsigned Overloads ---
-template <uint8_t N> uint8_t to_chr_array(const uint32_t value, char (&chr)[N], uint8_t offset)
+template <uint8_t N> auto ToCharArray(const uint32_t value, char (&chr)[N], uint8_t offset)
 {
   return __int_to_array_offset_impl(value, chr, offset, false);
 }
 
-template <uint8_t N> uint8_t to_chr_array(const uint16_t value, char (&chr)[N], uint8_t offset)
+template <uint8_t N> auto ToCharArray(const uint16_t value, char (&chr)[N], uint8_t offset)
 {
-  return to_chr_array(static_cast<uint32_t>(value), chr, offset);
+  return ToCharArray(static_cast<uint32_t>(value), chr, offset);
 }
 
-template <uint8_t N> uint8_t to_chr_array(const uint8_t value, char (&chr)[N], uint8_t offset)
+template <uint8_t N> auto ToCharArray(const uint8_t value, char (&chr)[N], uint8_t offset)
 {
-  return to_chr_array(static_cast<uint32_t>(value), chr, offset);
+  return ToCharArray(static_cast<uint32_t>(value), chr, offset);
 }
 
 // --- Signed Overloads ---
-template <uint8_t N> uint8_t to_chr_array(const int32_t value, char (&chr)[N], uint8_t offset)
+template <uint8_t N> auto ToCharArray(const int32_t value, char (&chr)[N], uint8_t offset)
 {
   uint32_t uval = static_cast<uint32_t>(value);
   bool is_neg   = false;
@@ -79,14 +79,14 @@ template <uint8_t N> uint8_t to_chr_array(const int32_t value, char (&chr)[N], u
   return __int_to_array_offset_impl(uval, chr, offset, is_neg);
 }
 
-template <uint8_t N> uint8_t to_chr_array(const int16_t value, char (&chr)[N], uint8_t offset)
+template <uint8_t N> auto ToCharArray(const int16_t value, char (&chr)[N], uint8_t offset)
 {
-  return to_chr_array(static_cast<int32_t>(value), chr, offset);
+  return ToCharArray(static_cast<int32_t>(value), chr, offset);
 }
 
-template <uint8_t N> uint8_t to_chr_array(const int8_t value, char (&chr)[N], uint8_t offset)
+template <uint8_t N> auto ToCharArray(const int8_t value, char (&chr)[N], uint8_t offset)
 {
-  return to_chr_array(static_cast<int32_t>(value), chr, offset);
+  return ToCharArray(static_cast<int32_t>(value), chr, offset);
 }
 
 } // namespace Utils::StringUtils
