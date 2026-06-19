@@ -16,6 +16,11 @@ auto Lcd2004::Initialize(void) -> void
   s_LcdTimer->Start();
 }
 
+auto Lcd2004::Print(const uint8_t specialChar) -> void
+{
+  bsp_lcd_20x4_send_data(specialChar);
+}
+
 auto Lcd2004::Run(void) -> void
 {
   if (s_LcdTimer->IsFinished())

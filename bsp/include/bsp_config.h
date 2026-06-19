@@ -7,6 +7,15 @@
 #define BSP_SERVO_MOTOR_DIRECTION_RIGHT (1U)
 #define BSP_SERVO_MOTOR_DIRECTION_LEFT  (2U)
 
+#define BSP_LCD_2004_CHAR_LOWER_I       (0x00U)
+#define BSP_LCD_2004_CHAR_LOWER_U       (0x01U)
+#define BSP_LCD_2004_CHAR_LOWER_O       (0x02U)
+#define BSP_LCD_2004_CHAR_LOWER_G       (0x03U)
+#define BSP_LCD_2004_CHAR_LOWER_C       (0x04U)
+#define BSP_LCD_2004_CHAR_UPPER_O       (0x05U)
+#define BSP_LCD_2004_CHAR_DEGREE_SYMBOL (0xDFU)
+#define BSP_LCD_2004_CHAR_ARROW_SYMBOL  (0x7EU)
+
 #ifdef __cplusplus
 extern "C"
 {

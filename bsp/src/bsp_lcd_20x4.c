@@ -145,7 +145,6 @@ void __bsp_lcd_20x4_initialize(void)
   HAL_Delay(50U);
 
   // --- STEP 1: Hardware-Level 4-Bit Reset Sequence ---
-  // Must be executed as raw individual nibbles while the controller is in 8-bit mode
   lcd_send_nibble_blocking(0x30U);
   HAL_Delay(5U);
 
@@ -155,29 +154,76 @@ void __bsp_lcd_20x4_initialize(void)
   lcd_send_nibble_blocking(0x30U);
   HAL_Delay(1U);
 
-  lcd_send_nibble_blocking(0x20U); // Interface finally drops to 4-bit configuration
+  lcd_send_nibble_blocking(0x20U);
   HAL_Delay(1U);
 
   // --- STEP 2: Main HD44780 Configurations ---
-  // 0x28 = 4-bit interface, 4 rows (or 2 physical lines internally), 5x8 font
-  // 0x0C = Display completely ON, Cursor line OFF, Cursor blink OFF
-  // 0x01 = Clear display screen RAM data map
-  // 0x06 = Entry state mode: Automatic text shift right increment
   uint8_t init_cmds[] = {0x28U, 0x0CU, 0x01U, 0x06U};
 
   for (uint8_t i = 0U; i < sizeof(init_cmds); i++)
   {
-    uint8_t upper = init_cmds[i] & 0xF0;
-    uint8_t lower = (init_cmds[i] << 4) & 0xF0;
+    uint8_t upper = init_cmds[i] & 0xF0U;
+    uint8_t lower = (init_cmds[i] << 4U) & 0xF0U;
 
     uint8_t seq[4] = {upper | LCD_PIN_BACKLIGHT | LCD_PIN_EN, upper | LCD_PIN_BACKLIGHT,
                       lower | LCD_PIN_BACKLIGHT | LCD_PIN_EN, lower | LCD_PIN_BACKLIGHT};
 
     HAL_I2C_Master_Transmit(&hi2c1, PCF8574_I2C_ADDRESS, seq, 4U, 100U);
 
-    // Clear display instruction (0x01) mandates a longer layout cycle execution time
     HAL_Delay(init_cmds[i] == 0x01U ? 2U : 1U);
   }
+
+// --- STEP 3: Register Turkish / Special Characters into CGRAM ---
+// The base command address for the first character in CGRAM is 0x40
+#define SPECIAL_CHAR_BYTE_COUNT 8U
+#define NUM_SPECIAL_CHARS       6U
+
+  const uint8_t special_chars[NUM_SPECIAL_CHARS][SPECIAL_CHAR_BYTE_COUNT] = {
+    {0x00U, 0x00U, 0x0CU, 0x04U, 0x04U, 0x04U, 0x0EU, 0x00U}, // lower i (Custom CGRAM index 0)
+    {0x00U, 0x11U, 0x00U, 0x11U, 0x11U, 0x11U, 0x0FU, 0x00U}, // lower ü (Custom CGRAM index 1)
+    {0x00U, 0x0AU, 0x00U, 0x0EU, 0x11U, 0x11U, 0x0EU, 0x00U}, // lower ö (Custom CGRAM index 2)
+    {0x00U, 0x0EU, 0x00U, 0x0EU, 0x0AU, 0x0EU, 0x02U, 0x0EU}, // lower g (Custom CGRAM index 3)
+    {0x00U, 0x00U, 0x0EU, 0x10U, 0x10U, 0x11U, 0x0EU, 0x04U}, // lower ç (Custom CGRAM index 4)
+    {0x0AU, 0x0EU, 0x11U, 0x11U, 0x11U, 0x11U, 0x0EU, 0x00U}  // upper Ö (Custom CGRAM index 5)
+  };
+
+  for (uint8_t ch = 0U; ch < NUM_SPECIAL_CHARS; ch++)
+  {
+    // Set CGRAM address step location (0x40, 0x48, 0x50, etc.)
+    uint8_t cgram_cmd = 0x40U + (ch * SPECIAL_CHAR_BYTE_COUNT);
+    uint8_t upper_cmd = cgram_cmd & 0xF0U;
+    uint8_t lower_cmd = (cgram_cmd << 4U) & 0xF0U;
+
+    uint8_t cmd_seq[4] = {upper_cmd | LCD_PIN_BACKLIGHT | LCD_PIN_EN, upper_cmd | LCD_PIN_BACKLIGHT,
+                          lower_cmd | LCD_PIN_BACKLIGHT | LCD_PIN_EN,
+                          lower_cmd | LCD_PIN_BACKLIGHT};
+
+    HAL_I2C_Master_Transmit(&hi2c1, PCF8574_I2C_ADDRESS, cmd_seq, 4U, 100U);
+    HAL_Delay(1U);
+
+    // Send the 8 bitmap rows sequentially for this character pattern
+    for (uint8_t row = 0U; row < SPECIAL_CHAR_BYTE_COUNT; row++)
+    {
+      uint8_t data_byte  = special_chars[ch][row];
+      uint8_t upper_data = data_byte & 0xF0U;
+      uint8_t lower_data = (data_byte << 4U) & 0xF0U;
+
+      uint8_t data_seq[4] = {upper_data | LCD_PIN_BACKLIGHT | LCD_PIN_RS | LCD_PIN_EN,
+                             upper_data | LCD_PIN_BACKLIGHT | LCD_PIN_RS,
+                             lower_data | LCD_PIN_BACKLIGHT | LCD_PIN_RS | LCD_PIN_EN,
+                             lower_data | LCD_PIN_BACKLIGHT | LCD_PIN_RS};
+
+      HAL_I2C_Master_Transmit(&hi2c1, PCF8574_I2C_ADDRESS, data_seq, 4U, 100U);
+      HAL_Delay(1U);
+    }
+  }
+
+  // Set the LCD cursor memory location back to DDRAM address line (0x80)
+  // so regular text prints to the home screen instead of corrupting character definitions.
+  uint8_t reset_ddram[4] = {0x80U | LCD_PIN_BACKLIGHT | LCD_PIN_EN, 0x80U | LCD_PIN_BACKLIGHT,
+                            0x00U | LCD_PIN_BACKLIGHT | LCD_PIN_EN, 0x00U | LCD_PIN_BACKLIGHT};
+  HAL_I2C_Master_Transmit(&hi2c1, PCF8574_I2C_ADDRESS, reset_ddram, 4U, 100U);
+  HAL_Delay(1U);
 }
 
 static void enqueue_lcd_byte(uint8_t data, uint8_t control_flags)

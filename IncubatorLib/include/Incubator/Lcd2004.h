@@ -16,6 +16,8 @@ public:
   template <uint8_t N>
   static auto Print(const char (&chrArr)[N], uint8_t size = N, uint8_t offset = 0U) -> void;
 
+  static auto Print(const uint8_t specialChar) -> void;
+
 private:
 };
 
