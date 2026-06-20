@@ -36,6 +36,8 @@ TIM_HandleTypeDef htim2;
 ADC_HandleTypeDef hadc1;
 TIM_HandleTypeDef htim3;
 
+IWDG_HandleTypeDef hiwdg;
+
 void SystemClock_Config(void);
 static void gpio_init(void);
 static void dma_init(void);
@@ -46,6 +48,7 @@ static void tim2_init(void);
 static void tim3_init(void);
 static void pwm_init(void);
 static void adc1_init(void);
+static void iwdg_init(void);
 static void adc1_readings_init(void);
 static void lcd_20x4_init(void);
 static void bsp_bme280_init(void);
@@ -62,6 +65,7 @@ void bsp_initialize(void)
   tim3_init();
   pwm_init();
   adc1_init();
+  iwdg_init();
   adc1_readings_init();
   lcd_20x4_init();
   bsp_bme280_init();
@@ -290,16 +294,22 @@ bool bsp_bme280_is_init_successfull(void)
   return is_bme280_init_success;
 }
 
+void bsp_watchdog_reset(void)
+{
+  HAL_IWDG_Refresh(&hiwdg);
+}
+
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct   = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct   = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState       = RCC_HSI_ON;
+  RCC_OscInitStruct.LSIState       = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL     = RCC_PLL_MUL9;
@@ -557,6 +567,17 @@ static void adc1_init(void)
   sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank    = ADC_REGULAR_RANK_2;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+static void iwdg_init(void)
+{
+  hiwdg.Instance       = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_256;
+  hiwdg.Init.Reload    = 4095;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
   {
     Error_Handler();
   }

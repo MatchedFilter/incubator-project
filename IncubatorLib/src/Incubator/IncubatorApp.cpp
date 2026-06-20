@@ -82,5 +82,6 @@ auto IncubatorApp::Run(void) -> void
   ReadSensorsAndUpdateDisplay();
   m_Presenter.Run();
   m_Lcd2004View.Run();
+  bsp_watchdog_reset();
 }
 } // namespace Incubator
