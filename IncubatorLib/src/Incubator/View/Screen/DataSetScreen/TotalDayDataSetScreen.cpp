@@ -10,6 +10,7 @@ void TotalDayDataSetScreen::PrintDayString(const uint8_t day) const
   char dayString[4] = {0};
   static_cast<void>(Utils::StringUtils::ToCharArray(day, dayString));
   m_Lcd->Print(dayString);
+  m_Lcd->Print(" G");
   m_Lcd->Print(BSP_LCD_2004_CHAR_LOWER_U);
   m_Lcd->Print("n  ");
 }
