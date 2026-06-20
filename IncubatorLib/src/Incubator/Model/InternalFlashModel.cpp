@@ -9,9 +9,9 @@ static constexpr uint32_t WORD_SIZE_IN_BYTES = 4U;
 
 static constexpr uint32_t SETTINGS_DATA_START_MEMORY_ADDRESS_OFFSET = 0U;
 static constexpr uint32_t TIME_INFORMATION_DATA_START_MEMORY_ADDRESS_OFFSET =
-  SETTINGS_DATA_START_MEMORY_ADDRESS_OFFSET + 64U;
+  SETTINGS_DATA_START_MEMORY_ADDRESS_OFFSET + 32U;
 static constexpr uint32_t PID_DATA_START_MEMORY_ADDRESS_OFFSET =
-  TIME_INFORMATION_DATA_START_MEMORY_ADDRESS_OFFSET + 64U;
+  TIME_INFORMATION_DATA_START_MEMORY_ADDRESS_OFFSET + 32U;
 ;
 
 InternalFlashModel::InternalFlashModel()
@@ -121,7 +121,7 @@ bool InternalFlashModel::Get(AdminData &data)
   buffer.Reset();
 
   bsp_flash_read(m_FlashBaseAddress, PID_DATA_START_MEMORY_ADDRESS_OFFSET,
-                 reinterpret_cast<uint32_t *>(buffer.m_Buffer), ADMIN_DATA_WORD_SIZE);
+                 reinterpret_cast<uint32_t *>(&buffer.m_Buffer[0]), ADMIN_DATA_WORD_SIZE);
   buffer.m_Size = AdminData::DATA_SIZE;
 
   MF::ByteStreamReader<ADMIN_DATA_BUFFER_SIZE> reader(buffer);
@@ -146,7 +146,7 @@ bool InternalFlashModel::Get(SettingsData &data)
   buffer.Reset();
 
   bsp_flash_read(m_FlashBaseAddress, SETTINGS_DATA_START_MEMORY_ADDRESS_OFFSET,
-                 reinterpret_cast<uint32_t *>(buffer.m_Buffer), SETTINGS_DATA_WORD_SIZE);
+                 reinterpret_cast<uint32_t *>(&buffer.m_Buffer[0]), SETTINGS_DATA_WORD_SIZE);
   buffer.m_Size = SettingsData::DATA_SIZE;
 
   MF::ByteStreamReader<SETTINGS_DATA_BUFFER_SIZE> reader(buffer);
@@ -171,7 +171,8 @@ bool InternalFlashModel::Get(TimeInformationData &data)
   buffer.Reset();
 
   bsp_flash_read(m_FlashBaseAddress, TIME_INFORMATION_DATA_START_MEMORY_ADDRESS_OFFSET,
-                 reinterpret_cast<uint32_t *>(buffer.m_Buffer), TIME_INFORMATION_DATA_WORD_SIZE);
+                 reinterpret_cast<uint32_t *>(&buffer.m_Buffer[0]),
+                 TIME_INFORMATION_DATA_WORD_SIZE);
   buffer.m_Size = TimeInformationData::DATA_SIZE;
 
   MF::ByteStreamReader<TIME_INFORMATION_DATA_BUFFER_SIZE> reader(buffer);

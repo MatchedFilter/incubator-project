@@ -3,7 +3,6 @@
 #include "Data/UsbData.h"
 #include "TimeUtils/TimerManager.h"
 #include "Utils/CacheManager.h"
-#include "Utils/StringUtils.h"
 #include "bsp_config.h"
 
 namespace Incubator

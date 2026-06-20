@@ -4,7 +4,6 @@
 #include "Incubator/IncubatorData/SettingsData.h"
 #include "Incubator/IncubatorData/TimeInformationData.h"
 
-#include <cinttypes>
 namespace Incubator
 {
 class IModel

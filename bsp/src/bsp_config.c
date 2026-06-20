@@ -256,11 +256,10 @@ void bsp_flash_read(const uint32_t base_address, uint32_t offset, uint32_t *word
 {
   if (words_length <= FLASH_MAX_WORD_SIZE)
   {
-    const uint32_t address = base_address + offset;
+    volatile uint32_t *read_address = (volatile uint32_t *) (base_address + offset);
     for (uint32_t i = 0U; i < words_length; i++)
     {
-      volatile uint32_t *read_address = (volatile uint32_t *) address + (i * WORD_SIZE);
-      words[i]                        = *read_address;
+      words[i] = read_address[i];
     }
   }
 }
