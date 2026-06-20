@@ -333,21 +333,15 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
-    for (uint8_t i = 0U; i < 2U; i++)
+    for (uint8_t i = 0U; i < 20U; i++)
     {
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-      HAL_Delay(2000);
+      HAL_Delay(150);
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-      HAL_Delay(2000);
+      HAL_Delay(50);
     }
 
-    for (uint8_t i = 0U; i < 10U; i++)
-    {
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-      HAL_Delay(100);
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-      HAL_Delay(100);
-    }
+    NVIC_SystemReset();
   }
 }
 
