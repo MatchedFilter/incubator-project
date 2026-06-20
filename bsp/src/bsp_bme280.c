@@ -99,18 +99,25 @@ bool __bsp_bme280_init(void)
  */
 void __bsp_bme280_process(void)
 {
-  static uint32_t dma_timeout_counter = 0;
+  static uint32_t dma_timeout_counter    = 0;
+  static uint32_t dma_read_error_counter = 0;
   switch (bme_state)
   {
     case BME280_STATE_IDLE:
       if (HAL_I2C_Mem_Read_DMA(&hi2c1, BME280_DEFAULT_ADDRESS, 0xF7U, I2C_MEMADD_SIZE_8BIT,
                                dma_rx_buffer, 8U) == HAL_OK)
       {
-        bme_state = BME280_STATE_DMA_BUSY;
+        bme_state              = BME280_STATE_DMA_BUSY;
+        dma_read_error_counter = 0U;
       }
       else
       {
-        sensor_error = true;
+        dma_read_error_counter++;
+        if (dma_read_error_counter > 1000U)
+        {
+          sensor_error           = true;
+          dma_read_error_counter = 0U;
+        }
       }
       break;
 
@@ -127,12 +134,12 @@ void __bsp_bme280_process(void)
   if (bme_state == BME280_STATE_DMA_BUSY)
   {
     dma_timeout_counter++;
-    if (dma_timeout_counter > 1000U)
+    if (dma_timeout_counter > 10000U)
     {
-      bme_state = BME280_STATE_IDLE; // Reset state machine
+      bme_state           = BME280_STATE_IDLE; // Reset state machine
+      dma_timeout_counter = 0;
+      sensor_error        = true;
     }
-    dma_timeout_counter = 0;
-    sensor_error        = true;
 
     // Trigger a custom error flag here
   }
@@ -260,6 +267,8 @@ static void bme280_parse_and_compensate(void)
   v_x1_u32r = (v_x1_u32r < 0 ? 0 : v_x1_u32r);
   v_x1_u32r = (v_x1_u32r > 419430400 ? 419430400 : v_x1_u32r);
 
-  uint32_t hum_q10     = (uint32_t) (v_x1_u32r >> 12);
-  current_humidity_pct = (uint8_t) (hum_q10 >> 10);
+  uint32_t fine_H = (uint32_t) (v_x1_u32r >> 12);
+
+  float precise_humidity = (float) fine_H / 1024.0f;
+  current_humidity_pct   = (uint8_t) (precise_humidity + 0.5f);
 }
