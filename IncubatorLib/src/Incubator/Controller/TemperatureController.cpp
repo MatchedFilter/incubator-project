@@ -47,9 +47,11 @@ uint16_t TemperatureController::Control(const int32_t &temperatureInMilliCelcius
     const int32_t previousError =
       m_DesiredTemperatureInMilliCelcius - m_PreviousTemperatureInMilliCelcius;
     const int32_t output =
-      (m_PConstant * error) +
-      (m_IConstant * error * static_cast<int32_t>(timeDifferenceInMillisecond)) +
-      (m_DConstant * ((error - previousError) / static_cast<int32_t>(timeDifferenceInMillisecond)));
+      ((m_PConstant * error) / 100) +
+      ((m_IConstant * error * static_cast<int32_t>(timeDifferenceInMillisecond)) / 100) +
+      ((m_DConstant *
+        ((error - previousError) / static_cast<int32_t>(timeDifferenceInMillisecond))) /
+       100);
 
     if (output > 0.0)
     {

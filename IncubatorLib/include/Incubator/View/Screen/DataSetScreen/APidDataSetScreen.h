@@ -28,9 +28,9 @@ protected:
   virtual EnumScreenType GetNextScreenForNoSelection() const final override;
 
 private:
-  static constexpr int32_t MAX_ALLOWED_CONSTANT    = static_cast<int32_t>(5000L);
-  static constexpr int32_t MIN_ALLOWED_CONSTANT    = static_cast<int32_t>(-5000L);
-  static constexpr int32_t HIGH_INCREMENT_CONSTANT = static_cast<uint32_t>(20L);
+  static constexpr int32_t MAX_ALLOWED_CONSTANT    = static_cast<int32_t>(999999999);
+  static constexpr int32_t MIN_ALLOWED_CONSTANT    = static_cast<int32_t>(-999999999L);
+  static constexpr int32_t HIGH_INCREMENT_CONSTANT = static_cast<uint32_t>(30L);
   static constexpr int32_t LOW_INCREMENT_CONSTANT  = static_cast<uint32_t>(1L);
 };
 } // namespace Incubator

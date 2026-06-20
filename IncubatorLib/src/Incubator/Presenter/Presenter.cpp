@@ -349,11 +349,11 @@ auto Presenter::ControlHeater(void)
 {
   const auto currentTimeStamp = bsp_get_time_in_ms();
   const auto timestampDiff    = currentTimeStamp - m_HeaterControlTimestamp;
-  if (timestampDiff > 3000U)
+  if (timestampDiff > 1000U)
   {
     m_HeaterControlTimestamp = currentTimeStamp;
   }
-  if ((timestampDiff / 3U) > m_HeaterOnPeriod)
+  if ((timestampDiff) > m_HeaterOnPeriod)
   {
     bsp_heater_turn_off();
   }

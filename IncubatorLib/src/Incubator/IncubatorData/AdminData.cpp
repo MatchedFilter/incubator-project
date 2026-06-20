@@ -4,7 +4,7 @@ namespace Incubator
 {
 void AdminData::Reset()
 {
-  m_P                       = static_cast<int32_t>(600L);
+  m_P                       = static_cast<int32_t>(70L);
   m_I                       = static_cast<int32_t>(0L);
   m_D                       = static_cast<int32_t>(0L);
   m_UpperHumidityDifference = 3U;
