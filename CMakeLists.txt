@@ -26,12 +26,16 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
         -Wl,--gc-sections
         -flto
         -Wl,-Map=${PROJECT_NAME}.map,--cref
+        -specs=nosys.specs
         -T${CMAKE_CURRENT_SOURCE_DIR}/bsp/src/STM32F103C8Tx_FLASH.ld
     )
 
     add_compile_definitions(USE_HAL_DRIVER STM32F103xB)
 
     add_subdirectory(bsp)
+    add_subdirectory(Common/MFBufferLib)
+    add_subdirectory(Common/MFByteStreamLib)
+    add_subdirectory(Common/MFEndianUtilsLib)
     add_subdirectory(IncubatorLib)
 
     file(GLOB_RECURSE INCUBATOR_SRCS

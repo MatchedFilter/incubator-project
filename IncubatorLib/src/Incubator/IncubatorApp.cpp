@@ -6,7 +6,6 @@
 #include "bsp_config.h"
 
 #include <cstring>
-#include <stddef.h>
 
 namespace Incubator
 {
@@ -19,11 +18,11 @@ auto IncubatorApp::Initialize(void) -> void
 
   m_Timer = TimeUtils::TimerManager::CreateMillisecondTimer();
   m_Timer->SetDuration(250U);
+  m_Timer->Start();
 
   m_UsbTransmissionHandler.Initialize();
-  m_DummyTimer = TimeUtils::TimerManager::CreateMillisecondTimer();
-  m_DummyTimer->SetDuration(1000);
-  m_DummyTimer->Start();
+
+  m_Presenter.Initialize(&m_Lcd2004View, &m_InternalFlashModel);
 }
 
 auto IncubatorApp::Run(void) -> void
@@ -36,9 +35,7 @@ auto IncubatorApp::Run(void) -> void
   m_UsbCommandHandler.Run();
   m_UsbTransmissionHandler.Run();
 
-  if (m_DummyTimer->IsFinished())
-  {
-    m_DummyTimer->Start();
-  }
+  m_Presenter.Run();
+  m_Lcd2004View.Run();
 }
 } // namespace Incubator

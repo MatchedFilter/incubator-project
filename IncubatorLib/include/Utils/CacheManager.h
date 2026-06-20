@@ -10,7 +10,8 @@ class CacheManager
 public:
   CacheManager() = delete;
 
-  template <typename T> static auto Write(const T &data) -> void
+  template <typename T>
+  static auto Write(const T &data) -> void
   {
     static_assert(std::is_trivially_copyable<T>::value,
                   "Cache data must be trivially copyable for baremetal safety.");
@@ -19,7 +20,8 @@ public:
     CacheStorage<T>::isInitialized = true;
   }
 
-  template <typename T> static auto Get(T &outData) -> bool
+  template <typename T>
+  static auto Get(T &outData) -> bool
   {
     static_assert(std::is_trivially_copyable<T>::value,
                   "Cache data must be trivially copyable for baremetal safety.");
@@ -33,7 +35,8 @@ public:
     return result;
   }
 
-  template <typename T> static auto Remove(void) -> void
+  template <typename T>
+  static auto Remove(void) -> void
   {
     static_assert(std::is_trivially_copyable<T>::value,
                   "Cache data must be trivially copyable for baremetal safety.");
@@ -44,7 +47,8 @@ public:
   }
 
 private:
-  template <typename U> struct CacheStorage
+  template <typename U>
+  struct CacheStorage
   {
     static inline U instance{};
     static inline bool isInitialized{false};

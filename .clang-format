@@ -64,3 +64,5 @@ AlignConsecutiveMacros:
 
 # Indents case labels one level inside switch blocks
 IndentCaseLabels: true
+
+AlwaysBreakTemplateDeclarations: Yes

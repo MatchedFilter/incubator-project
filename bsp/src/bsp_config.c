@@ -10,14 +10,18 @@
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 
-#define SERVO_CENTER_PULSE (1500U)
+#include <stdbool.h>
+
+#define SERVO_CENTER_PULSE  (1500U)
+#define FLASH_MAX_WORD_SIZE (32U)
+#define WORD_SIZE           (4U)
 
 I2C_HandleTypeDef hi2c1;
 volatile bool usb_data_ready   = false;
 volatile uint32_t usb_rx_len   = 0U;
 uint8_t usb_rx_buffer[64]      = {0U};
 volatile bool usb_port_is_open = false;
-extern volatile uint32_t systick_counter;
+extern volatile uint64_t systick_counter;
 uint16_t joystick_values[2] = {0U};
 
 DMA_HandleTypeDef hdma_i2c1_rx;
@@ -73,7 +77,7 @@ void bsp_assert(bool condition)
   }
 }
 
-uint32_t bsp_get_time_in_ms(void)
+uint64_t bsp_get_time_in_ms(void)
 {
   return systick_counter;
 }
@@ -197,6 +201,68 @@ void bsp_lcd_20x4_send_data(uint8_t data)
 void bsp_lcd_20x4_process_run(void)
 {
   __bsp_lcd_20x4_process_queue();
+}
+
+bool bsp_flash_write(uint32_t base_address, uint32_t offset, const uint32_t *words,
+                     uint8_t words_length)
+{
+  bool result = false;
+
+  static uint32_t current_words[FLASH_MAX_WORD_SIZE] = {0U};
+  if (words_length <= FLASH_MAX_WORD_SIZE)
+  {
+    (void) memset(current_words, 0xFFU, sizeof(current_words));
+    bsp_flash_read(base_address, offset, current_words, FLASH_MAX_WORD_SIZE);
+    const uint32_t word_offset = offset / WORD_SIZE;
+
+    for (uint32_t i = 0U; i < words_length; i++)
+    {
+      const uint32_t current_index = word_offset + i;
+      current_words[current_index] = words[i];
+    }
+
+    HAL_FLASH_Unlock();
+    FLASH_EraseInitTypeDef eraseInit;
+    uint32_t sectorError;
+
+    eraseInit.TypeErase   = FLASH_TYPEERASE_PAGES;
+    eraseInit.PageAddress = base_address;
+    eraseInit.NbPages     = 1;
+
+    if (HAL_OK == HAL_FLASHEx_Erase(&eraseInit, &sectorError))
+    {
+      bool valid = true;
+      for (uint32_t i = 0U; i < FLASH_MAX_WORD_SIZE; i++)
+      {
+        const uint32_t write_address = base_address + (i * WORD_SIZE);
+        if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, write_address, current_words[i]))
+        {
+          valid = false;
+          break;
+        }
+      }
+      if (valid)
+      {
+        result = true;
+      }
+    }
+    HAL_FLASH_Lock();
+  }
+  return result;
+}
+
+void bsp_flash_read(const uint32_t base_address, uint32_t offset, uint32_t *words,
+                    uint8_t words_length)
+{
+  if (words_length <= FLASH_MAX_WORD_SIZE)
+  {
+    const uint32_t address = base_address + offset;
+    for (uint32_t i = 0U; i < words_length; i++)
+    {
+      volatile uint32_t *read_address = (volatile uint32_t *) address + (i * WORD_SIZE);
+      words[i]                        = *read_address;
+    }
+  }
 }
 
 void SystemClock_Config(void)

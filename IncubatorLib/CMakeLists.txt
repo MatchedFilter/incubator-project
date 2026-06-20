@@ -11,4 +11,9 @@ add_library(${PROJECT_NAME} STATIC
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC incubator_bsp_lib)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    incubator_bsp_lib
+    MFBufferLib
+    MFByteStreamLib
+    MFEndianUtilsLib
+)

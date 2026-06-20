@@ -23,7 +23,7 @@ extern "C"
   void bsp_initialize(void);
   void bsp_reset(void);
   void bsp_assert(bool condition);
-  uint32_t bsp_get_time_in_ms(void);
+  uint64_t bsp_get_time_in_ms(void);
   void bsp_internal_led_turn_on(void);
   void bsp_internal_led_turn_off(void);
   void bsp_internal_led_toggle(void);
@@ -44,6 +44,12 @@ extern "C"
   void bsp_lcd_20x4_send_command(uint8_t cmd);
   void bsp_lcd_20x4_send_data(uint8_t data);
   void bsp_lcd_20x4_process_run(void);
+
+  bool bsp_flash_write(uint32_t base_address, uint32_t offset, const uint32_t *words,
+                       uint8_t words_length);
+
+  void bsp_flash_read(const uint32_t base_address, uint32_t offset, uint32_t *words,
+                      uint8_t words_length);
 
 #ifdef __cplusplus
 }

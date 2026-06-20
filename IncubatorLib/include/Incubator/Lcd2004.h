@@ -8,21 +8,22 @@ namespace Incubator
 class Lcd2004
 {
 public:
-  Lcd2004() = delete;
-
-  static auto Initialize(void) -> void;
-  static auto Run(void) -> void;
+  Lcd2004()  = default;
+  ~Lcd2004() = default;
 
   template <uint8_t N>
-  static auto Print(const char (&chrArr)[N], uint8_t size = N, uint8_t offset = 0U) -> void;
-
-  static auto Print(const uint8_t specialChar) -> void;
+  auto Print(const char (&chrArr)[N], uint8_t size = N, uint8_t offset = 0U) const -> void;
+  auto Print(const uint8_t specialChar) const -> void;
+  auto MoveCursor(const uint8_t lineNumber, const uint8_t column) const -> void;
+  auto Clear(void) const -> void;
 
 private:
+  auto Run(void) -> void;
+  friend class Lcd2004View;
 };
 
 template <uint8_t N>
-auto Lcd2004::Print(const char (&chrArr)[N], const uint8_t size, const uint8_t offset) -> void
+auto Lcd2004::Print(const char (&chrArr)[N], const uint8_t size, const uint8_t offset) const -> void
 {
   for (uint8_t i = offset; i < size; i++)
   {

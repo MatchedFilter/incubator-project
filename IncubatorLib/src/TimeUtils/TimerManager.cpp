@@ -25,7 +25,7 @@ auto TimerManager::CreateMillisecondTimer(void) -> MillisecondTimer *
 
 auto TimerManager::Run(void) -> void
 {
-  const uint32_t currentMs = bsp_get_time_in_ms();
+  const uint64_t currentMs = bsp_get_time_in_ms();
   for (uint8_t i = 0U; i < s_Index; i++)
   {
     s_Timers[i].Update(currentMs);

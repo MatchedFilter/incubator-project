@@ -42,7 +42,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-volatile uint32_t systick_counter = 0U;
+volatile uint64_t systick_counter = 0U;
 
 /* USER CODE END PV */
 
