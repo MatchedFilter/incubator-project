@@ -9,11 +9,11 @@ void SensorsStatusScreen::PrintSensorStatus(const EnumSensorStatus &sensorStatus
 {
   if (SENSOR_STATUS_NO_ERROR == sensorStatus)
   {
-    m_Lcd->Print("YOK");
+    m_Lcd->Print(" YOK");
   }
   else
   {
-    m_Lcd->Print("VAR");
+    m_Lcd->Print(" VAR");
   }
 }
 

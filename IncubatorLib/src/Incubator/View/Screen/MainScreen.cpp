@@ -15,9 +15,9 @@ void MainScreen::DisplayTemperature() const
   uint8_t index              = 0U;
   index +=
     Utils::StringUtils::ToCharArray((m_TemperatureInMilliCelcius / 1000), temperatureString, index);
-  temperatureString[index++]  = '.';
-  index                      += Utils::StringUtils::ToCharArray(
-    static_cast<int32_t>(m_TemperatureInMilliCelcius % 1000) % 100, temperatureString, index);
+  temperatureString[index++] = '.';
+  index += Utils::StringUtils::ToCharArray(m_TemperatureInMilliCelcius % 1000 % 100,
+                                           temperatureString, index);
   m_Lcd->Print(temperatureString);
 }
 
@@ -51,14 +51,14 @@ void MainScreen::DisplayTargetHumidity() const
       ? m_SettingsData.m_LastDaysHumidityInPercentage
       : m_SettingsData.m_HumidityInPercentage;
 
-  char humidityString[4] = {0};
+  char humidityString[8] = {0};
   static_cast<void>(Utils::StringUtils::ToCharArray(humidityInPercent, humidityString));
   m_Lcd->Print(humidityString);
 }
 
 void MainScreen::DisplayTemperatureInformation()
 {
-  if (m_bIsTemperatureSet)
+  if (m_TemperatureStatus == SENSOR_DATA_STATUS_SET)
   {
     m_Lcd->MoveCursor(0U, 4U);
     if (false == (m_TemperatureInMilliCelcius < 0))
@@ -98,10 +98,10 @@ void MainScreen::DisplayTemperatureFailure()
 
 void MainScreen::DisplayHumidityInformation()
 {
-  if (m_bIsHumiditySet)
+  if (m_HumidityStatus == SENSOR_DATA_STATUS_SET)
   {
     m_Lcd->MoveCursor(1U, 5U);
-    char humidityString[4] = {0};
+    char humidityString[8] = {0};
     uint8_t index          = 0U;
     if (m_HumidityInPercent < 10U)
     {
@@ -229,12 +229,12 @@ void MainScreen::DisplaySecond()
 }
 
 MainScreen::MainScreen()
-    : AScreen{SCREEN_TYPE_MAIN}, m_Lcd{nullptr}, m_bIsTemperatureSet{false},
-      m_TemperatureInMilliCelcius{0}, m_bIsHumiditySet{false}, m_HumidityInPercent{0U},
-      m_bIsIncubatorDataProvided{false}, m_bIsSettingsProvided{false},
+    : AScreen{SCREEN_TYPE_MAIN}, m_Lcd{nullptr}, m_TemperatureStatus{SENSOR_DATA_STATUS_UNKNOWN},
+      m_TemperatureInMilliCelcius{0}, m_HumidityStatus{SENSOR_DATA_STATUS_UNKNOWN},
+      m_HumidityInPercent{0U}, m_bIsIncubatorDataProvided{false}, m_bIsSettingsProvided{false},
       m_bTimeInformationProvided{false}, m_ScreenInformationUpdateTimerTask{nullptr},
-      m_bModelValid{true}, m_TemperatureUpdateStatus{UPDATE_STATUS_VALID},
-      m_HumidityUpdateStatus{UPDATE_STATUS_VALID}
+      m_bModelValid{true}, m_TemperatureUpdateStatus{UPDATE_STATUS_SCREEN_NOT_UPDATED},
+      m_HumidityUpdateStatus{UPDATE_STATUS_SCREEN_NOT_UPDATED}
 {
 }
 
@@ -289,21 +289,21 @@ void MainScreen::UpdateTimeInformationData(const TimeInformationData &data)
 
 void MainScreen::UpdateTemperature(const int32_t &temperatureInMilliCelcius)
 {
-  if (UPDATE_STATUS_INVALID == m_TemperatureUpdateStatus)
+  if (m_TemperatureStatus != SENSOR_DATA_STATUS_SET)
   {
-    m_TemperatureUpdateStatus = UPDATE_STATUS_VALID;
+    m_TemperatureUpdateStatus = UPDATE_STATUS_SCREEN_NOT_UPDATED;
+    m_TemperatureStatus       = SENSOR_DATA_STATUS_SET;
   }
-  m_bIsTemperatureSet         = true;
   m_TemperatureInMilliCelcius = temperatureInMilliCelcius;
 }
 
 void MainScreen::UpdateHumidity(const uint8_t &humidityInPercent)
 {
-  if (UPDATE_STATUS_INVALID == m_HumidityUpdateStatus)
+  if (m_HumidityStatus != SENSOR_DATA_STATUS_SET)
   {
-    m_HumidityUpdateStatus = UPDATE_STATUS_VALID;
+    m_HumidityUpdateStatus = UPDATE_STATUS_SCREEN_NOT_UPDATED;
+    m_HumidityStatus       = SENSOR_DATA_STATUS_SET;
   }
-  m_bIsHumiditySet    = true;
   m_HumidityInPercent = humidityInPercent;
 }
 
@@ -311,9 +311,10 @@ void MainScreen::OnTemperatureFailure()
 {
   if (m_bModelValid)
   {
-    if (UPDATE_STATUS_INVALID != m_TemperatureUpdateStatus)
+    if (m_TemperatureStatus != SENSOR_DATA_STATUS_FAIL)
     {
-      m_TemperatureUpdateStatus = UPDATE_STATUS_INVALID;
+      m_TemperatureUpdateStatus = UPDATE_STATUS_SCREEN_NOT_UPDATED;
+      m_TemperatureStatus       = SENSOR_DATA_STATUS_FAIL;
     }
   }
 }
@@ -322,9 +323,10 @@ void MainScreen::OnHumidityFailure()
 {
   if (m_bModelValid)
   {
-    if (UPDATE_STATUS_INVALID != m_HumidityUpdateStatus)
+    if (m_HumidityStatus != SENSOR_DATA_STATUS_FAIL)
     {
-      m_HumidityUpdateStatus = UPDATE_STATUS_INVALID;
+      m_HumidityUpdateStatus = UPDATE_STATUS_SCREEN_NOT_UPDATED;
+      m_HumidityStatus       = SENSOR_DATA_STATUS_FAIL;
     }
   }
 }
@@ -346,32 +348,44 @@ void MainScreen::Run()
     if (m_ScreenInformationUpdateTimerTask->IsFinished())
     {
       m_ScreenInformationUpdateTimerTask->Start();
-      if (UPDATE_STATUS_SCREEN_UPDATED == m_HumidityUpdateStatus)
+      if (m_HumidityUpdateStatus == UPDATE_STATUS_SCREEN_UPDATED)
       {
-        DisplayHumidityInformation();
-      }
-      else if (UPDATE_STATUS_VALID == m_HumidityUpdateStatus)
-      {
-        m_HumidityUpdateStatus = UPDATE_STATUS_SCREEN_UPDATED;
-        StartToDisplayHumidityInformation();
+        if (m_HumidityStatus != SENSOR_DATA_STATUS_FAIL)
+        {
+          DisplayHumidityInformation();
+        }
       }
       else
       {
-        DisplayHumidityFailure();
+        if (m_HumidityStatus == SENSOR_DATA_STATUS_FAIL)
+        {
+          DisplayHumidityFailure();
+        }
+        else
+        {
+          StartToDisplayHumidityInformation();
+        }
+        m_HumidityUpdateStatus = UPDATE_STATUS_SCREEN_UPDATED;
       }
 
-      if (UPDATE_STATUS_SCREEN_UPDATED == m_TemperatureUpdateStatus)
+      if (m_TemperatureUpdateStatus == UPDATE_STATUS_SCREEN_UPDATED)
       {
-        DisplayTemperatureInformation();
-      }
-      else if (UPDATE_STATUS_VALID == m_TemperatureUpdateStatus)
-      {
-        m_TemperatureUpdateStatus = UPDATE_STATUS_SCREEN_UPDATED;
-        StartToDisplayTemperatureInformation();
+        if (m_TemperatureStatus != SENSOR_DATA_STATUS_FAIL)
+        {
+          DisplayTemperatureInformation();
+        }
       }
       else
       {
-        DisplayTemperatureFailure();
+        if (m_TemperatureStatus == SENSOR_DATA_STATUS_FAIL)
+        {
+          DisplayTemperatureFailure();
+        }
+        else
+        {
+          StartToDisplayTemperatureInformation();
+        }
+        m_TemperatureUpdateStatus = UPDATE_STATUS_SCREEN_UPDATED;
       }
 
       DisplayTimeInformation();

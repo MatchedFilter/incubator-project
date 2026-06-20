@@ -11,7 +11,7 @@
 namespace Incubator
 {
 
-auto IncubatorApp::ReadSensors(void)
+auto IncubatorApp::ReadSensorsAndUpdateDisplay(void)
 {
   bool bme_sensor_is_ok = true;
   if (m_SensorReadingTimer->IsFinished())
@@ -20,10 +20,9 @@ auto IncubatorApp::ReadSensors(void)
     bsp_bme280_process_run();
   }
 
-  uint8_t humidityInPercentage = 0U;
-  if (bsp_bme280_read_humidity(&humidityInPercentage))
+  if (bsp_bme280_read_humidity(&m_HumidityInPercentage))
   {
-    m_Presenter.UpdateHumidity(humidityInPercentage);
+    m_Presenter.UpdateHumidity(m_HumidityInPercentage);
   }
   else
   {
@@ -31,23 +30,22 @@ auto IncubatorApp::ReadSensors(void)
     m_Presenter.OnHumidityFailure();
   }
 
-  int32_t temperatureInMillidegree = 0;
-  if (bsp_bme280_read_temperature(&temperatureInMillidegree))
+  if (bsp_bme280_read_temperature(&m_TemperatureInMilliCelcius))
   {
-    m_Presenter.UpdateTemperature(temperatureInMillidegree);
+    m_Presenter.UpdateTemperature(m_TemperatureInMilliCelcius);
   }
   else
   {
     bme_sensor_is_ok = false;
     m_Presenter.OnTemperatureFailure();
   }
-  if (!bme_sensor_is_ok)
+  if (bme_sensor_is_ok)
   {
-    m_SensorsStatusData.m_Bme280Status = SENSOR_STATUS_ERROR;
+    m_SensorsStatusData.m_Bme280Status = SENSOR_STATUS_NO_ERROR;
   }
   else
   {
-    m_SensorsStatusData.m_Bme280Status = SENSOR_STATUS_NO_ERROR;
+    m_SensorsStatusData.m_Bme280Status = SENSOR_STATUS_ERROR;
   }
   m_Presenter.UpdateSensorsStatus(m_SensorsStatusData);
 }
@@ -81,6 +79,7 @@ auto IncubatorApp::Run(void) -> void
   m_UsbCommandHandler.Run();
   m_UsbTransmissionHandler.Run();
 
+  ReadSensorsAndUpdateDisplay();
   m_Presenter.Run();
   m_Lcd2004View.Run();
 }

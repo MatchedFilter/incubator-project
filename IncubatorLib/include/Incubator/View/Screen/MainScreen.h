@@ -10,9 +10,15 @@ namespace Incubator
 
 enum EnumUpdateStatus : uint8_t
 {
-  UPDATE_STATUS_INVALID,
-  UPDATE_STATUS_VALID,
+  UPDATE_STATUS_SCREEN_NOT_UPDATED,
   UPDATE_STATUS_SCREEN_UPDATED
+};
+
+enum EnumSensorDataStatus : uint8_t
+{
+  SENSOR_DATA_STATUS_UNKNOWN,
+  SENSOR_DATA_STATUS_SET,
+  SENSOR_DATA_STATUS_FAIL,
 };
 
 class MainScreen : public AScreen
@@ -36,9 +42,9 @@ public:
 
 private:
   Lcd2004 *m_Lcd;
-  bool m_bIsTemperatureSet;
+  EnumSensorDataStatus m_TemperatureStatus;
   int32_t m_TemperatureInMilliCelcius;
-  bool m_bIsHumiditySet;
+  EnumSensorDataStatus m_HumidityStatus;
   uint8_t m_HumidityInPercent;
   bool m_bIsIncubatorDataProvided;
   bool m_bIsSettingsProvided;

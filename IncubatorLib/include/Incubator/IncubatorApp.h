@@ -19,7 +19,7 @@ public:
   auto Run(void) -> void;
 
 private:
-  auto ReadSensors(void);
+  auto ReadSensorsAndUpdateDisplay(void);
 
 private:
   Presenter m_Presenter;
@@ -30,6 +30,8 @@ private:
   UsbCommandHandler m_UsbCommandHandler;
   UsbTransmissionHandler m_UsbTransmissionHandler;
   SensorsStatusData m_SensorsStatusData;
+  int32_t m_TemperatureInMilliCelcius = 0;
+  uint8_t m_HumidityInPercentage      = 0U;
 };
 } // namespace Incubator
 #endif // INCUBATOR_INCUBATORAPP_H

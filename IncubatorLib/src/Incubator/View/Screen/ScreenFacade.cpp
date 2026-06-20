@@ -175,7 +175,6 @@ void ScreenFacade::UpdateTemperature(const int32_t &temperatureInMilliCelcius)
 
 void ScreenFacade::OnTemperatureFailure()
 {
-  m_CurrentScreen = &m_MainScreen;
   m_MainScreen.OnTemperatureFailure();
 }
 
@@ -191,7 +190,6 @@ void ScreenFacade::OnHumidityFailure()
 
 void ScreenFacade::OnModelFailure()
 {
-  m_CurrentScreen = &m_MainScreen;
   m_MainScreen.OnModelFailure();
 }
 

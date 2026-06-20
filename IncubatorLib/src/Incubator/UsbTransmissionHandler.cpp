@@ -3,6 +3,7 @@
 #include "Data/UsbData.h"
 #include "TimeUtils/TimerManager.h"
 #include "Utils/CacheManager.h"
+#include "Utils/StringUtils.h"
 #include "bsp_config.h"
 
 namespace Incubator
@@ -50,8 +51,48 @@ auto UsbTransmissionHandler::Run(void) -> void
     }
     else
     {
+      char txStr[64]   = {0};
+      uint8_t index    = 0U;
+      txStr[index++]   = 'b';
+      txStr[index++]   = 'm';
+      txStr[index++]   = 'e';
+      txStr[index++]   = '2';
+      txStr[index++]   = '8';
+      txStr[index++]   = '0';
+      txStr[index++]   = ':';
+      txStr[index++]   = ' ';
+      uint8_t humidity = 0U;
+      int32_t temp;
+      if (bsp_bme280_read_humidity(&humidity) && bsp_bme280_read_temperature(&temp))
+      {
+        txStr[index++]  = 'O';
+        txStr[index++]  = 'K';
+        txStr[index++]  = ' ';
+        txStr[index++]  = 't';
+        txStr[index++]  = 'm';
+        txStr[index++]  = 'p';
+        txStr[index++]  = ':';
+        txStr[index++]  = ' ';
+        index          += Utils::StringUtils::ToCharArray(temp, txStr, index);
+        txStr[index++]  = ',';
+        txStr[index++]  = ' ';
+        txStr[index++]  = 'h';
+        txStr[index++]  = 'm';
+        txStr[index++]  = 'd';
+        txStr[index++]  = ':';
+        txStr[index++]  = ' ';
+        index          += Utils::StringUtils::ToCharArray(humidity, txStr, index);
+      }
+      else
+      {
+        txStr[index++] = 'F';
+        txStr[index++] = 'A';
+        txStr[index++] = 'I';
+        txStr[index++] = 'L';
+      }
+      txStr[index++] = '\n';
       m_PeriodicTxTimer->SetDuration(usbData.m_TransmissionPeriodicity);
-      static_cast<void>(bsp_usb_send_data(ALIVE_CMD, ALIVE_CMD_SIZE));
+      static_cast<void>(bsp_usb_send_data((uint8_t *) txStr, index));
     }
     m_PeriodicTxTimer->Start();
   }
