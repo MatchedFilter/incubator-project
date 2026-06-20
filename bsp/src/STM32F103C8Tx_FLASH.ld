@@ -23,7 +23,8 @@ _Min_Stack_Size = 0x2000; /* required amount of stack */
 MEMORY
 {
   RAM    (xrw)   : ORIGIN = 0x20000000,   LENGTH = 20K
-  FLASH  (rx)    : ORIGIN = 0x08004000,   LENGTH = 109K
+  FLASH  (rx)    : ORIGIN = 0x08004000,   LENGTH = 104K
+  CONFIG (rx)    : ORIGIN = 0x0801E000,   LENGTH = 8K
 }
 
 /* Sections */
@@ -126,6 +127,13 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
 
   } >RAM AT> FLASH
+
+  .config_sector (NOLOAD) :
+  {
+    . = ALIGN(4);
+    KEEP(*(.config_sector))
+    . = ALIGN(4);
+  } > CONFIG
 
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(4);

@@ -37,6 +37,7 @@ file(GLOB_RECURSE INCUBATOR_BSP_LIB_SRCS
     "src/Core/Src/*.s"
     "src/bsp_config.c"
     "src/bsp_lcd_20x4.c"
+    "src/bsp_bme280.c"
 )
 
 set_source_files_properties(Core/Src/startup_stm32f103xb.s

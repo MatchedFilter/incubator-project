@@ -13,11 +13,11 @@ void MainScreen::DisplayTemperature() const
 {
   char temperatureString[11] = {0};
   uint8_t index              = 0U;
-  index += Utils::StringUtils::ToCharArray(static_cast<int32_t>(m_TemperatureInCelcius),
-                                           temperatureString, index);
-  temperatureString[index++] = '.';
-  index += Utils::StringUtils::ToCharArray(static_cast<int32_t>(m_TemperatureInCelcius * 10.0) % 10,
-                                           temperatureString, index);
+  index +=
+    Utils::StringUtils::ToCharArray((m_TemperatureInMilliCelcius / 1000), temperatureString, index);
+  temperatureString[index++]  = '.';
+  index                      += Utils::StringUtils::ToCharArray(
+    static_cast<int32_t>(m_TemperatureInMilliCelcius % 1000) % 100, temperatureString, index);
   m_Lcd->Print(temperatureString);
 }
 
@@ -34,9 +34,9 @@ void MainScreen::DisplayTargetTemperature() const
   char temperatureString[11] = {0};
   uint8_t index              = 0U;
   index +=
-    Utils::StringUtils::ToCharArray(temperatureInMilliCelcius / 1000U, temperatureString, index);
+    Utils::StringUtils::ToCharArray(temperatureInMilliCelcius / 1000, temperatureString, index);
   temperatureString[index++] = '.';
-  index += Utils::StringUtils::ToCharArray((temperatureInMilliCelcius % 1000U) / 100U,
+  index += Utils::StringUtils::ToCharArray((temperatureInMilliCelcius % 1000) / 100,
                                            temperatureString, index);
   m_Lcd->Print(temperatureString);
 }
@@ -61,7 +61,7 @@ void MainScreen::DisplayTemperatureInformation()
   if (m_bIsTemperatureSet)
   {
     m_Lcd->MoveCursor(0U, 4U);
-    if (false == (m_TemperatureInCelcius < 0.0))
+    if (false == (m_TemperatureInMilliCelcius < 0))
     {
       m_Lcd->Print(" ");
     }
@@ -230,7 +230,7 @@ void MainScreen::DisplaySecond()
 
 MainScreen::MainScreen()
     : AScreen{SCREEN_TYPE_MAIN}, m_Lcd{nullptr}, m_bIsTemperatureSet{false},
-      m_TemperatureInCelcius{0.0}, m_bIsHumiditySet{false}, m_HumidityInPercent{0U},
+      m_TemperatureInMilliCelcius{0}, m_bIsHumiditySet{false}, m_HumidityInPercent{0U},
       m_bIsIncubatorDataProvided{false}, m_bIsSettingsProvided{false},
       m_bTimeInformationProvided{false}, m_ScreenInformationUpdateTimerTask{nullptr},
       m_bModelValid{true}, m_TemperatureUpdateStatus{UPDATE_STATUS_VALID},
@@ -287,14 +287,14 @@ void MainScreen::UpdateTimeInformationData(const TimeInformationData &data)
   }
 }
 
-void MainScreen::UpdateTemperature(const double &temperatureInCelcius)
+void MainScreen::UpdateTemperature(const int32_t &temperatureInMilliCelcius)
 {
   if (UPDATE_STATUS_INVALID == m_TemperatureUpdateStatus)
   {
     m_TemperatureUpdateStatus = UPDATE_STATUS_VALID;
   }
-  m_bIsTemperatureSet    = true;
-  m_TemperatureInCelcius = temperatureInCelcius;
+  m_bIsTemperatureSet         = true;
+  m_TemperatureInMilliCelcius = temperatureInMilliCelcius;
 }
 
 void MainScreen::UpdateHumidity(const uint8_t &humidityInPercent)

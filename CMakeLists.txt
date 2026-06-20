@@ -52,9 +52,9 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
     )
 
     add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
-        COMMAND ${CMAKE_OBJCOPY} -O binary ${PROJECT_NAME}.elf ${PROJECT_NAME}.bin
-        COMMAND ${CMAKE_OBJCOPY} -O ihex ${PROJECT_NAME}.elf ${PROJECT_NAME}.hex
-        COMMAND ${CMAKE_OBJCOPY} -O srec ${PROJECT_NAME}.elf ${PROJECT_NAME}.srec
+        COMMAND ${CMAKE_OBJCOPY} -O binary -R .config_sector ${PROJECT_NAME}.elf ${PROJECT_NAME}.bin
+        COMMAND ${CMAKE_OBJCOPY} -O ihex -R .config_sector ${PROJECT_NAME}.elf ${PROJECT_NAME}.hex
+        COMMAND ${CMAKE_OBJCOPY} -O srec -R .config_sector ${PROJECT_NAME}.elf ${PROJECT_NAME}.srec
         COMMAND ${CMAKE_SIZE} ${PROJECT_NAME}.elf
         COMMENT "Generating auxiliary flash memory file formats (.bin, .hex, .srec)..."
     )

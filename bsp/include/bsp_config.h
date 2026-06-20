@@ -51,6 +51,11 @@ extern "C"
   void bsp_flash_read(const uint32_t base_address, uint32_t offset, uint32_t *words,
                       uint8_t words_length);
 
+  void bsp_bme280_process_run(void);
+  bool bsp_bme280_read_humidity(uint8_t *humidity_in_percentage);
+  bool bsp_bme280_read_temperature(int32_t *temperature_in_millidegree);
+  bool bsp_bme280_is_init_successfull(void);
+
 #ifdef __cplusplus
 }
 #endif

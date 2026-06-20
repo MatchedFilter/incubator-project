@@ -16,7 +16,7 @@ public:
   ~Presenter();
   void Initialize(IView *view, IModel *model);
 
-  void UpdateTemperature(const double &temperatureInCelcius);
+  void UpdateTemperature(const int32_t &temperatureInMilliCelcius);
   void UpdateHumidity(const uint8_t humidityInPercent);
 
   void OnTemperatureFailure();

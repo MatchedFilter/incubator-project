@@ -168,9 +168,9 @@ void ScreenFacade::UpdateTimeInformationData(const TimeInformationData &data)
   m_MainScreen.UpdateTimeInformationData(data);
 }
 
-void ScreenFacade::UpdateTemperature(const double &temperatureInCelcius)
+void ScreenFacade::UpdateTemperature(const int32_t &temperatureInMilliCelcius)
 {
-  m_MainScreen.UpdateTemperature(temperatureInCelcius);
+  m_MainScreen.UpdateTemperature(temperatureInMilliCelcius);
 }
 
 void ScreenFacade::OnTemperatureFailure()

@@ -1,5 +1,6 @@
 #include "bsp_config.h"
 
+#include "bsp_bme280.h"
 #include "bsp_lcd_20x4.h"
 #include "cmsis_gcc.h"
 #include "main.h"
@@ -22,7 +23,10 @@ volatile uint32_t usb_rx_len   = 0U;
 uint8_t usb_rx_buffer[64]      = {0U};
 volatile bool usb_port_is_open = false;
 extern volatile uint64_t systick_counter;
-uint16_t joystick_values[2] = {0U};
+uint16_t joystick_values[2]        = {0U};
+static bool is_bme280_init_success = false;
+
+__attribute__((section(".config_sector"))) const uint8_t user_config[256];
 
 DMA_HandleTypeDef hdma_i2c1_rx;
 DMA_HandleTypeDef hdma_i2c1_tx;
@@ -44,6 +48,7 @@ static void pwm_init(void);
 static void adc1_init(void);
 static void adc1_readings_init(void);
 static void lcd_20x4_init(void);
+static void bsp_bme280_init(void);
 
 void bsp_initialize(void)
 {
@@ -59,6 +64,7 @@ void bsp_initialize(void)
   adc1_init();
   adc1_readings_init();
   lcd_20x4_init();
+  bsp_bme280_init();
   HAL_Delay(2000U);
   force_usb_reenumeration();
   MX_USB_DEVICE_Init();
@@ -212,7 +218,7 @@ bool bsp_flash_write(uint32_t base_address, uint32_t offset, const uint32_t *wor
   if (words_length <= FLASH_MAX_WORD_SIZE)
   {
     (void) memset(current_words, 0xFFU, sizeof(current_words));
-    bsp_flash_read(base_address, offset, current_words, FLASH_MAX_WORD_SIZE);
+    bsp_flash_read(base_address, 0U, current_words, FLASH_MAX_WORD_SIZE);
     const uint32_t word_offset = offset / WORD_SIZE;
 
     for (uint32_t i = 0U; i < words_length; i++)
@@ -262,6 +268,26 @@ void bsp_flash_read(const uint32_t base_address, uint32_t offset, uint32_t *word
       words[i] = read_address[i];
     }
   }
+}
+
+void bsp_bme280_process_run(void)
+{
+  __bsp_bme280_process();
+}
+
+bool bsp_bme280_read_humidity(uint8_t *humidity_in_percentage)
+{
+  return __bsp_bme280_get_humidity(humidity_in_percentage);
+}
+
+bool bsp_bme280_read_temperature(int32_t *temperature_in_millidegree)
+{
+  return __bsp_bme280_get_temperature(temperature_in_millidegree);
+}
+
+bool bsp_bme280_is_init_successfull(void)
+{
+  return is_bme280_init_success;
 }
 
 void SystemClock_Config(void)
@@ -552,6 +578,11 @@ static void lcd_20x4_init(void)
   __bsp_lcd_20x4_initialize();
 }
 
+static void bsp_bme280_init(void)
+{
+  is_bme280_init_success = __bsp_bme280_init();
+}
+
 void I2C1_EV_IRQHandler(void)
 {
   HAL_I2C_EV_IRQHandler(&hi2c1);
@@ -560,4 +591,12 @@ void I2C1_EV_IRQHandler(void)
 void I2C1_ER_IRQHandler(void)
 {
   HAL_I2C_ER_IRQHandler(&hi2c1);
+}
+
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  if (hi2c->Instance == I2C1)
+  {
+    __bsp_bme280_set_ready();
+  }
 }

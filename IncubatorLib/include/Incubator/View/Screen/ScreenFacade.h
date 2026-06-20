@@ -48,7 +48,7 @@ public:
   void UpdateAdminData(const AdminData &data);
   void UpdateSettingsData(const SettingsData &data);
   void UpdateTimeInformationData(const TimeInformationData &data);
-  void UpdateTemperature(const double &temperatureInCelcius);
+  void UpdateTemperature(const int32_t &temperatureInMilliCelcius);
   void OnTemperatureFailure();
   void UpdateHumidity(const uint8_t &humidityInPrecentage);
   void OnHumidityFailure();

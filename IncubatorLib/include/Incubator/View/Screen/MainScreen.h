@@ -25,7 +25,7 @@ public:
 
   void UpdateSettingsData(const SettingsData &data);
   void UpdateTimeInformationData(const TimeInformationData &data);
-  void UpdateTemperature(const double &temperatureInCelcius);
+  void UpdateTemperature(const int32_t &temperatureInMilliCelcius);
   void UpdateHumidity(const uint8_t &humidityInPercent);
   void OnTemperatureFailure();
   void OnHumidityFailure();
@@ -37,7 +37,7 @@ public:
 private:
   Lcd2004 *m_Lcd;
   bool m_bIsTemperatureSet;
-  double m_TemperatureInCelcius;
+  int32_t m_TemperatureInMilliCelcius;
   bool m_bIsHumiditySet;
   uint8_t m_HumidityInPercent;
   bool m_bIsIncubatorDataProvided;

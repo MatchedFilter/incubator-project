@@ -14,7 +14,7 @@ public:
   Lcd2004View();
   ~Lcd2004View();
   virtual bool Initialize(const DataChangedEventHandlers *eventHandlers) override;
-  virtual void UpdateTemperature(const double temperatureInCelcius) override;
+  virtual void UpdateTemperature(const int32_t temperatureInMilliCelcius) override;
   virtual void OnTemperatureFailure() override;
 
   virtual void UpdateHumidity(const uint8_t humidityInPercentage) override;

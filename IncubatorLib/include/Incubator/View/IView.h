@@ -13,7 +13,7 @@ class IView
 {
 public:
   virtual bool Initialize(const DataChangedEventHandlers *eventHandlers)  = 0;
-  virtual void UpdateTemperature(const double temperatureInCelcius)       = 0;
+  virtual void UpdateTemperature(const int32_t temperatureInMilliCelcius) = 0;
   virtual void OnTemperatureFailure()                                     = 0;
   virtual void UpdateHumidity(const uint8_t humidityInPercent)            = 0;
   virtual void OnHumidityFailure()                                        = 0;

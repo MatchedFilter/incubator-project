@@ -179,9 +179,9 @@ void Presenter::Initialize(IView *view, IModel *model)
   }
 }
 
-void Presenter::UpdateTemperature(const double &temperatureInCelcius)
+void Presenter::UpdateTemperature(const int32_t &temperatureInMilliCelcius)
 {
-  m_View->UpdateTemperature(temperatureInCelcius);
+  m_View->UpdateTemperature(temperatureInMilliCelcius);
 }
 
 void Presenter::UpdateHumidity(const uint8_t humidityInPercent)

@@ -149,9 +149,9 @@ bool Lcd2004View::Initialize(const DataChangedEventHandlers *eventHandlers)
   return bResult;
 }
 
-void Lcd2004View::UpdateTemperature(const double temperatureInCelcius)
+void Lcd2004View::UpdateTemperature(const int32_t temperatureInMilliCelcius)
 {
-  m_ScreenFacade.UpdateTemperature(temperatureInCelcius);
+  m_ScreenFacade.UpdateTemperature(temperatureInMilliCelcius);
 }
 
 void Lcd2004View::OnTemperatureFailure()

@@ -17,7 +17,7 @@ public:
   virtual bool Get(TimeInformationData &data) override;
 
 private:
-  const uint32_t m_FlashBaseAddress = static_cast<uint32_t>(0x0801F400UL);
+  const uint32_t m_FlashBaseAddress = static_cast<uint32_t>(0x0801E000UL);
 };
 } // namespace Incubator
 
