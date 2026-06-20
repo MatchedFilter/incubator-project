@@ -1,6 +1,6 @@
 #ifndef INCUBATOR_TEMPERATURECONTROLLER_H
 #define INCUBATOR_TEMPERATURECONTROLLER_H
-#include <cinttypes>
+#include <cstdint>
 namespace Incubator
 {
 
@@ -11,18 +11,19 @@ class TemperatureController
 public:
   TemperatureController();
   ~TemperatureController();
-  void SetDesiredTemperature(const double &desiredTemperatureInCelcius);
-  void SetPid(const double &p, const double &i, const double &d);
-  uint16_t Control(const double &temperatureInCelcius, const uint64_t &timeDifferenceInMillisecond);
+  void SetDesiredTemperature(const int32_t &desiredTemperatureInMilliCelcius);
+  void SetPid(const int32_t &p, const int32_t &i, const int32_t &d);
+  uint16_t Control(const int32_t &temperatureInCelcius,
+                   const uint64_t &timeDifferenceInMillisecond);
   void OnTemperatureFailure();
 
 private:
   bool m_bIsTemperatureValid;
-  double m_DesiredTemperatureInCelcius;
-  double m_PreviousTemperatureInCelcius;
-  double m_PConstant;
-  double m_IConstant;
-  double m_DConstant;
+  int32_t m_DesiredTemperatureInMilliCelcius;
+  int32_t m_PreviousTemperatureInMilliCelcius;
+  int32_t m_PConstant;
+  int32_t m_IConstant;
+  int32_t m_DConstant;
 };
 } // namespace Incubator
 

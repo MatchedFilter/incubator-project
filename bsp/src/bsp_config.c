@@ -294,6 +294,16 @@ bool bsp_bme280_is_init_successfull(void)
   return is_bme280_init_success;
 }
 
+void bsp_heater_turn_on(void)
+{
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+}
+
+void bsp_heater_turn_off(void)
+{
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+}
+
 void bsp_watchdog_reset(void)
 {
   HAL_IWDG_Refresh(&hiwdg);

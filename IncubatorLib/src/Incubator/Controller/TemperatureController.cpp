@@ -3,8 +3,8 @@
 namespace Incubator
 {
 TemperatureController::TemperatureController()
-    : m_bIsTemperatureValid(false), m_DesiredTemperatureInCelcius(0.0),
-      m_PreviousTemperatureInCelcius(0.0), m_PConstant(0.0), m_IConstant(0.0), m_DConstant(0.0)
+    : m_bIsTemperatureValid(false), m_DesiredTemperatureInMilliCelcius(0),
+      m_PreviousTemperatureInMilliCelcius(0), m_PConstant(0), m_IConstant(0), m_DConstant(0)
 {
 }
 
@@ -12,42 +12,44 @@ TemperatureController::~TemperatureController()
 {
 }
 
-void TemperatureController::SetDesiredTemperature(const double &desiredTemperatureInCelcius)
+void TemperatureController::SetDesiredTemperature(const int32_t &desiredTemperatureInMilliCelcius)
 {
-  m_DesiredTemperatureInCelcius = desiredTemperatureInCelcius;
+  m_DesiredTemperatureInMilliCelcius = desiredTemperatureInMilliCelcius;
 }
 
-void TemperatureController::SetPid(const double &p, const double &i, const double &d)
+void TemperatureController::SetPid(const int32_t &p, const int32_t &i, const int32_t &d)
 {
-  m_PConstant = p * 10.0;
-  m_IConstant = i * 400.0;
-  m_DConstant = d / 25.0;
+  m_PConstant = p;
+  m_IConstant = i;
+  m_DConstant = d;
 }
 
-uint16_t TemperatureController::Control(const double &temperatureInCelcius,
+uint16_t TemperatureController::Control(const int32_t &temperatureInMilliCelcius,
                                         const uint64_t &timeDifferenceInMillisecond)
 {
   uint16_t result = static_cast<uint16_t>(0UL);
 
-  const double timeDifferenceInSeconds = static_cast<double>(timeDifferenceInMillisecond) / 1000.0;
   if (false == m_bIsTemperatureValid)
   {
-    m_PreviousTemperatureInCelcius = temperatureInCelcius;
-    m_bIsTemperatureValid          = true;
+    m_PreviousTemperatureInMilliCelcius = temperatureInMilliCelcius;
+    m_bIsTemperatureValid               = true;
   }
 
-  const double error = m_DesiredTemperatureInCelcius - temperatureInCelcius;
-  constexpr double THRESHOLD_TEMPERATURE_LOW_DIFFERENCE_IN_MILLICELCIUS  = 5.0;
-  constexpr double THRESHOLD_TEMPERATURE_HIGH_DIFFERENCE_IN_MILLICELCIUS = -1.0;
+  const int32_t error = m_DesiredTemperatureInMilliCelcius - temperatureInMilliCelcius;
+  constexpr int32_t THRESHOLD_TEMPERATURE_LOW_DIFFERENCE_IN_MILLICELCIUS  = 5000;
+  constexpr int32_t THRESHOLD_TEMPERATURE_HIGH_DIFFERENCE_IN_MILLICELCIUS = -1000;
   if (error > THRESHOLD_TEMPERATURE_LOW_DIFFERENCE_IN_MILLICELCIUS)
   {
     result = MAX_TEMPERATURE_OUTPUT_CONTROL_VALUE;
   }
   else if (error > THRESHOLD_TEMPERATURE_HIGH_DIFFERENCE_IN_MILLICELCIUS)
   {
-    const double previousError = m_DesiredTemperatureInCelcius - m_PreviousTemperatureInCelcius;
-    const double output = (m_PConstant * error) + (m_IConstant * error * timeDifferenceInSeconds) +
-                          (m_DConstant * ((error - previousError) / timeDifferenceInSeconds));
+    const int32_t previousError =
+      m_DesiredTemperatureInMilliCelcius - m_PreviousTemperatureInMilliCelcius;
+    const int32_t output =
+      (m_PConstant * error) +
+      (m_IConstant * error * static_cast<int32_t>(timeDifferenceInMillisecond)) +
+      (m_DConstant * ((error - previousError) / static_cast<int32_t>(timeDifferenceInMillisecond)));
 
     if (output > 0.0)
     {
@@ -71,8 +73,8 @@ uint16_t TemperatureController::Control(const double &temperatureInCelcius,
 
 void TemperatureController::OnTemperatureFailure()
 {
-  m_bIsTemperatureValid          = false;
-  m_PreviousTemperatureInCelcius = 0.0;
+  m_bIsTemperatureValid               = false;
+  m_PreviousTemperatureInMilliCelcius = 0.0;
 }
 
 } // namespace Incubator

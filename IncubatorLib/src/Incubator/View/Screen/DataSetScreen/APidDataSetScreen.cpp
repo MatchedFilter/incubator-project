@@ -23,13 +23,11 @@ static auto GetPidValueString(const int32_t value, char (&chrArr)[11])
   {
     chrArr[index++] = '-';
   }
-  index           += Utils::StringUtils::ToCharArray(positiveValue / 10, chrArr, index);
-  chrArr[index++]  = '.';
-  index           += Utils::StringUtils::ToCharArray(positiveValue % 10, chrArr, index);
-  chrArr[index++]  = ' ';
-  chrArr[index++]  = ' ';
-  chrArr[index++]  = ' ';
-  chrArr[index]    = ' ';
+  index += Utils::StringUtils::ToCharArray(positiveValue, chrArr, index);
+  for (uint32_t i = index; i < 16U; i++)
+  {
+    chrArr[i] = ' ';
+  }
 }
 
 void APidDataSetScreen::PrintCurrentData() const

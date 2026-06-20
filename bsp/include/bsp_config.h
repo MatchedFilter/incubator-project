@@ -56,6 +56,9 @@ extern "C"
   bool bsp_bme280_read_temperature(int32_t *temperature_in_millidegree);
   bool bsp_bme280_is_init_successfull(void);
 
+  void bsp_heater_turn_on(void);
+  void bsp_heater_turn_off(void);
+
   void bsp_watchdog_reset(void);
 
 #ifdef __cplusplus

@@ -1,5 +1,6 @@
 #ifndef INCUBATOR_INCUBATORAPP_H
 #define INCUBATOR_INCUBATORAPP_H
+
 #include "Incubator/IncubatorData/SensorsStatusData.h"
 #include "Incubator/Model/InternalFlashModel.h"
 #include "Incubator/Presenter/Presenter.h"
@@ -19,17 +20,12 @@ public:
   auto Run(void) -> void;
 
 private:
-  auto ReadSensorsAndUpdateDisplay(void);
-
-private:
   Presenter m_Presenter;
   Lcd2004View m_Lcd2004View;
   InternalFlashModel m_InternalFlashModel;
-  TimeUtils::MillisecondTimer *m_Timer              = nullptr;
-  TimeUtils::MillisecondTimer *m_SensorReadingTimer = nullptr;
+  TimeUtils::MillisecondTimer *m_Timer = nullptr;
   UsbCommandHandler m_UsbCommandHandler;
   UsbTransmissionHandler m_UsbTransmissionHandler;
-  SensorsStatusData m_SensorsStatusData;
   int32_t m_TemperatureInMilliCelcius = 0;
   uint8_t m_HumidityInPercentage      = 0U;
 };
