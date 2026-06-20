@@ -353,7 +353,7 @@ auto Presenter::ControlHeater(void)
   {
     m_HeaterControlTimestamp = currentTimeStamp;
   }
-  if ((timestampDiff * 3U) > m_HeaterOnPeriod)
+  if ((timestampDiff / 3U) > m_HeaterOnPeriod)
   {
     bsp_heater_turn_off();
   }

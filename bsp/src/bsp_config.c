@@ -72,6 +72,8 @@ void bsp_initialize(void)
   HAL_Delay(2000U);
   force_usb_reenumeration();
   MX_USB_DEVICE_Init();
+
+  bsp_incubator_motor_on();
 }
 
 void bsp_reset(void)
@@ -307,6 +309,15 @@ void bsp_heater_turn_off(void)
 void bsp_watchdog_reset(void)
 {
   HAL_IWDG_Refresh(&hiwdg);
+}
+
+void bsp_incubator_motor_on(void)
+{
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+}
+void bsp_incubator_motor_off(void)
+{
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 }
 
 void SystemClock_Config(void)

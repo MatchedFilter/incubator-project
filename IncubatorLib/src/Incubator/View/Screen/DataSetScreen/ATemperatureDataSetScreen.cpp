@@ -14,16 +14,14 @@ ATemperatureDataSetScreen::~ATemperatureDataSetScreen()
 {
 }
 
-static auto GetTemperatureString(const uint8_t temperatureInMillicelcius, char (&chrArr)[10]);
-static auto GetTemperatureString(const uint8_t temperatureInMillicelcius, char (&chrArr)[10])
+static auto GetTemperatureString(const int32_t temperatureInMillicelcius, char (&chrArr)[10]);
+static auto GetTemperatureString(const int32_t temperatureInMillicelcius, char (&chrArr)[10])
 {
   uint32_t index = 0U;
 
-  index += Utils::StringUtils::ToCharArray(static_cast<uint32_t>(temperatureInMillicelcius / 1000U),
-                                           chrArr, index);
-  chrArr[index++]  = '.';
-  index           += Utils::StringUtils::ToCharArray(
-    (static_cast<uint32_t>(temperatureInMillicelcius % 1000U) / 100U), chrArr, index);
+  index += Utils::StringUtils::ToCharArray(temperatureInMillicelcius / 1000, chrArr, index);
+  chrArr[index++] = '.';
+  index += Utils::StringUtils::ToCharArray((temperatureInMillicelcius % 1000 / 100), chrArr, index);
 }
 
 void ATemperatureDataSetScreen::PrintCurrentData() const

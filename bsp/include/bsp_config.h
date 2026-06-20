@@ -59,6 +59,9 @@ extern "C"
   void bsp_heater_turn_on(void);
   void bsp_heater_turn_off(void);
 
+  void bsp_incubator_motor_on(void);
+  void bsp_incubator_motor_off(void);
+
   void bsp_watchdog_reset(void);
 
 #ifdef __cplusplus
