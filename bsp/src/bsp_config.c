@@ -226,7 +226,7 @@ bool bsp_flash_write(uint32_t base_address, uint32_t offset, const uint32_t *wor
     uint32_t sectorError;
 
     eraseInit.TypeErase   = FLASH_TYPEERASE_PAGES;
-    eraseInit.PageAddress = base_address;
+    eraseInit.PageAddress = base_address & ~(1024U - 1U);
     eraseInit.NbPages     = 1;
 
     if (HAL_OK == HAL_FLASHEx_Erase(&eraseInit, &sectorError))
